@@ -104,10 +104,13 @@ public class Main {
         p.aplicarFitnessSegunRegimen();
         System.out.println("-----------------------------------");
         p.printPaths();
+        System.out.println("-----------------------------------");
+        System.out.println("  ");
 
         // ----------------------------------------------------------------------------------------------------
 
         //ELEGIR MÉTODO DE SELECCIÓN DE PADRES A UTILIZAR
+
         System.out.println("Ingrese el método de selección de padres: 1) Selección por Torneo 2) Rueda de Ruleta (ingrese 1 o 2): \"");
         opcion = scanner.nextLine();
         ArrayList<Couple> parejas = new ArrayList<>();
@@ -132,6 +135,9 @@ public class Main {
                      }
                      Couple parejaGenerada = new Couple(padre1, padre2);
                      parejas.add(parejaGenerada);
+                 }
+                 for (Couple pareja : parejas) {
+                    pareja.mostrarPareja();
                  }
             case "2":
 

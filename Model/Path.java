@@ -100,6 +100,10 @@ public class Path {
         this.fitness = fitness;
     }
 
+    public ArrayList<Integer> getCities(){
+        return cities;
+    }
+
     @Override
     public String toString() {
         String fitnessStr = String.format("%.8f", fitness);

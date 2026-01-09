@@ -48,7 +48,7 @@ public class Population {
     public void printPaths() {
         int i = 1;
         for (Path path : possiblePaths) {
-            String name = "Model.Path " + i + ": ";
+            String name = "Path " + i + ": ";
             System.out.println(name + path.toString());
             i++;
         }

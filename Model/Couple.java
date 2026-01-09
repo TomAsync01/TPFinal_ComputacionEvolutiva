@@ -1,14 +1,28 @@
 package Model;
 
 public class Couple{
-    private final Path padre1;
-    private final Path padre2;
+    private final Path dad;
+    private final Path mom;
 
     public Couple(Path padre1, Path padre2) {
-        this.padre1 = padre1;
-        this.padre2 = padre2;
+        this.dad = padre1;
+        this.mom = padre2;
     }
 
-    public Path getPadre1() { return padre1; }
-    public Path getPadre2() { return padre2; }
+    public Path getPadre1() { return dad; }
+    public Path getPadre2() { return mom; }
+    public void mostrarPareja() {
+        System.out.println("  ");
+        System.out.println("========================================");
+        System.out.println("Pareja:");
+        System.out.println("  Papá:");
+        System.out.println("    Ruta   : " + dad.getCities());
+        System.out.println("    Coste  : " + dad.getPathCost());
+        System.out.println("    Fitness: " + dad.getFitness());
+        System.out.println("  Mamá:");
+        System.out.println("    Ruta   : " + mom.getCities());
+        System.out.println("    Coste  : " + mom.getPathCost());
+        System.out.println("    Fitness: " + mom.getFitness());
+    }
+
 }
