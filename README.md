@@ -135,6 +135,6 @@ El proyecto incluye dos instancias de prueba en formato ATSP:
 - No requiere librerías externas
 
 ## Autor
-
+Antúnez Monges, Tomás
 Trabajo final - Intro. Computación Evolutiva  
-Ingeniería de Sistemas, FCE, UNCPBA
+Ingeniería de Sistemas, FCExa, UNCPBA
