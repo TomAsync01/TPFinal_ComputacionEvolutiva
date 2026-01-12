@@ -7,6 +7,8 @@ import java.util.Scanner;
 import Components.*;
 import Model.*;
 import Util.ATSPReader;
+import Util.EvolutionChart;
+import Util.EvolutionMetrics;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -120,7 +122,7 @@ public class Main {
         CrossMethod crossMethod;
         if (opcionCruce.equals("1")) {
             crossMethod = new PMXCrossMethod();
-        } else if (opcionCruce.equals("2")){
+        } else if (opcionCruce.equals("2")) {
             crossMethod = new ArchesBasedCrossingMethod();
         } else {
             System.err.println("Opción inválida. Saliendo.");
@@ -128,7 +130,7 @@ public class Main {
             return;
         }
 
-       // ========== SECCIÓN 6: MÉTODO DE MUTACIÓN ==========
+        // ========== SECCIÓN 6: MÉTODO DE MUTACIÓN ==========
         System.out.println("--- MÉTODO DE MUTACIÓN ---");
         System.out.print("Elija el método: 1) Mutación por Inversión 2) Mutación por desplazamiento (ingrese 1 o 2): ");
         String opcionMutacion = scanner.nextLine();
@@ -136,44 +138,40 @@ public class Main {
         MutationMethod mutationMethod;
         if (opcionMutacion.equals("1")) {
             mutationMethod = new InvertMutationMethod();
-        }
-        else if (opcionMutacion.equals("2")){
+        } else if (opcionMutacion.equals("2")) {
             mutationMethod = new ShiftMutationMethod();
         } else {
             System.err.println("Opción inválida. Saliendo.");
             scanner.close();
             return;
         }
-        System.out.println();
-        scanner.close();
+        System.out.println(" ");
 
         // ========== SECCIÓN 7: MÉTODO DE SELECCIÓN DE SUPERVIVIENTES ==========
         System.out.println("-- MÉTODO DE SELECCIÓN DE SUPERVIVIENTES ---");
-        System.out.println("Elija el método: 1) Steady-State  2) Elitismo (ingrese 1 o 2): ");
+        System.out.print("Elija el método: 1) Steady-State  2) Elitismo (ingrese 1 o 2): ");
         String opcionSobrevientes = scanner.nextLine();
 
         SurvivorsSelectionMethod survivorMethod;
-        if (opcionSobrevientes.equals("1")){
+        if (opcionSobrevientes.equals("1")) {
             System.out.println("Seleccione el valor de n (cantidad de individuos de la anterior generación a ser reemplazados en la siguiente): ");
             int numReemplazo = Integer.parseInt(scanner.nextLine());
-            if (numReemplazo >= N || numReemplazo <= 0){
+            if (numReemplazo >= N || numReemplazo <= 0) {
                 System.out.println("El valor a reemplazar debe ser menor al tamaño de la población y mayor a 0");
                 scanner.close();
                 return;
             }
             survivorMethod = new SteadyStateSurvivorSelectionMethod(numReemplazo);
-        }
-        else if (opcionSobrevientes.equals("2")){
+        } else if (opcionSobrevientes.equals("2")) {
             System.out.println("Seleccione el valor de k (cantidad de mejores individuos de la generación a preservar en la siguiente): ");
             int elite = Integer.parseInt(scanner.nextLine());
-            if (elite < 0 || elite > N){
+            if (elite < 0 || elite > N) {
                 System.out.println("El valor ingresado no es válido. Debe ser superior o igual a 0 y menor al tamaño de la población");
                 scanner.close();
                 return;
             }
             survivorMethod = new ElitismSurvivorMethod(elite);
-        }
-        else {
+        } else {
             System.err.println("Opción inválida. Saliendo.");
             scanner.close();
             return;
@@ -195,7 +193,10 @@ public class Main {
         System.out.println("Mejor camino inicial: " + p.getBestPath());
         System.out.println();
 
+        // Crear instancia de métricas
+        EvolutionMetrics metricas = new EvolutionMetrics();
         Random random = new Random();
+        metricas.startTracking();
 
         // Bucle de generaciones
         for (int generacion = 0; generacion < G; generacion++) {
@@ -222,7 +223,7 @@ public class Main {
                     hijos.add(hijo2);
                 }
 
-               // Decidir si aplicar mutación a cada hijo
+                // Decidir si aplicar mutación a cada hijo
                 for (Path hijo : hijos) {
                     if (random.nextDouble() < mutProb) {
                         mutationMethod.mutate(hijo);
@@ -235,14 +236,19 @@ public class Main {
             // 3. Reemplazar población
             nuevaGeneracion = survivorMethod.selectSurvivors(p.getPaths(), nuevaGeneracion);
             p.setPaths(nuevaGeneracion);
-            p.setPaths(nuevaGeneracion);
             p.aplicarFitnessSegunRegimen();
 
-            // 4. Mostrar progreso cada 100 generaciones
-            if (generacion % 100 == 0 || generacion == G - 1) {
+            // 4. Registrar métricas de evolución
+            metricas.recordGeneration(generacion, p);
+
+            // 5. Mostrar progreso periódico cada 100 generaciones
+            if (generacion % 100 == 0) {
+                double mejorFitness = p.getBestPath().getFitness();
+                double diversidad = metricas.getDiversityList().isEmpty() ? 0.0
+                        : metricas.getDiversityList().get(metricas.getDiversityList().size() - 1);
                 System.out.println("Generación " + generacion +
-                        " | Mejor costo: " + p.getBestPath().getPathCost() +
-                        " | Mejor fitness: " + String.format("%.6f", p.getBestPath().getFitness()));
+                        " | Mejor: " + String.format("%.6e", mejorFitness) +
+                        " | Diversidad: " + String.format("%.4f", diversidad));
             }
         }
 
@@ -253,6 +259,17 @@ public class Main {
         System.out.println("========================================");
         System.out.println("Mejor solución encontrada:");
         System.out.println(p.getBestPath());
+
+        // Generar reportes y visualizaciones
+        try {
+            EvolutionChart.generateHTML(metricas, "evolucion.html", new File(filePath).getName());
+            System.out.println("Visualización HTML generada en: evolucion.html");
+        } catch (IOException e) {
+            System.err.println("Error al generar reporte: " + e.getMessage());
+        }
+
+        scanner.close();
+
     }
 
     private static ArrayList<Couple> generarParejas(ArrayList<Path> generatedPaths, int N, FatherSelectionMethod strategy) {

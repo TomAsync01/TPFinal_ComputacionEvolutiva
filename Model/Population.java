@@ -3,12 +3,14 @@ package Model;
 import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * Clase que representa una población de caminos en un algoritmo genético para el problema del viajante de comercio (TSP).
+ */
 public class Population {
     private ArrayList<Path> possiblePaths;
     private final double mutProb;
     private final double crossProb;
     private final int generations;
-
 
     public enum FitnessRegime {
         MUY_SIMILARES,
@@ -22,6 +24,18 @@ public class Population {
         this.generations = generations;
     }
 
+    /**
+     * Crea una población mixta de caminos, combinando caminos generados por el método del vecino más cercano y caminos generados aleatoriamente.
+     *
+     * @param N            Número total de individuos en la población.
+     * @param C            Número de ciudades en el problema TSP.
+     * @param costs        Matriz de costos entre ciudades.
+     * @param mutProb      Probabilidad de mutación.
+     * @param crossProb    Probabilidad de cruce.
+     * @param generations  Número de generaciones para la evolución.
+     * @param porcentajeNN Porcentaje de individuos generados por el método del vecino más cercano.
+     * @return Una nueva instancia de Population con la mezcla de individuos.
+     */
     public static Population createMixedPopulation(int N, int C, int[][] costs, double mutProb, double crossProb, int generations, double porcentajeNN) {
         int nNN = (int) Math.round(N * porcentajeNN);
         if (nNN > N) nNN = N;
@@ -46,6 +60,7 @@ public class Population {
         return new Population(paths, mutProb, crossProb, generations);
     }
 
+    /** Imprime los caminos de la población */
     public void printPaths() {
         int i = 1;
         for (Path path : possiblePaths) {
@@ -55,6 +70,11 @@ public class Population {
         }
     }
 
+    /**
+     * Determina el régimen de fitness basado en la variabilidad de los costos de los caminos en la población.
+     *
+     * @return El régimen de fitness determinado.
+     */
     public FitnessRegime determinarRegimenFitnessPorCosto() {
         if (possiblePaths == null || possiblePaths.isEmpty()) {
             return FitnessRegime.MUY_SIMILARES;
@@ -84,7 +104,9 @@ public class Population {
         }
     }
 
-
+    /**
+     * Aplica la función de fitness a los caminos de la población según el régimen determinado.
+     */
     public void aplicarFitnessSegunRegimen() {
         FitnessRegime regime = determinarRegimenFitnessPorCosto();
 
@@ -116,10 +138,12 @@ public class Population {
         }
     }
 
+    /** Devuelve una copia de la lista de caminos en la población */
     public ArrayList<Path> getPaths(){
         return new ArrayList<>(possiblePaths);
     }
 
+    /** Devuelve el mejor camino en la población según el fitness */
     public Path getBestPath(){
         if (possiblePaths == null || possiblePaths.isEmpty()) {
             return null;
@@ -134,6 +158,22 @@ public class Population {
         return best;
     }
 
+    /** Devuelve el mejor camino en la población según el fitness */
+    public Path getWorstPath(){
+        if (possiblePaths == null || possiblePaths.isEmpty()) {
+            return null;
+        }
+
+        Path worst = possiblePaths.getFirst();
+        for (Path p : possiblePaths) {
+            if (p.getFitness() < worst.getFitness()) {
+                worst = p;
+            }
+        }
+        return worst;
+    }
+
+    /** Establece una nueva generación de caminos en la población */
     public void setPaths(ArrayList<Path> nuevaGeneracion) {
         this.possiblePaths = nuevaGeneracion;
     }

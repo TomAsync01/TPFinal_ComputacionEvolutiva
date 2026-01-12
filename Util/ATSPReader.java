@@ -5,6 +5,13 @@ import java.util.*;
 
 public class ATSPReader {
 
+    /**
+     * Lee un archivo ATSP y devuelve la matriz de costos.
+     *
+     * @param file El archivo ATSP a leer.
+     * @return La matriz de costos representando el problema ATSP.
+     * @throws IOException Si ocurre un error al leer el archivo.
+     */
     public static int[][] read(File file) throws IOException {
         int dimension = -1;
         List<Integer> values = new ArrayList<>();

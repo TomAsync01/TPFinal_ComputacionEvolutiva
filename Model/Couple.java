@@ -1,5 +1,8 @@
 package Model;
 
+/**
+ * Clase que representa una pareja de caminos (padre y madre) en un algoritmo genético para el problema del viajante de comercio (TSP).
+ */
 public class Couple{
     private final Path dad;
     private final Path mom;
