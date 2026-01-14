@@ -41,5 +41,10 @@ public class RouletteWheelMethod implements FatherSelectionMethod{
         System.out.println("Algo falló al seleccionar un camino por el método de la rueda de ruleta");
         return paths.getLast();
     }
+
+    @Override
+    public String getName(){
+        return "Rueda de Ruleta";
+    }
 }
 

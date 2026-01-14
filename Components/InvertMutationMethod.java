@@ -42,4 +42,9 @@ public class InvertMutationMethod implements MutationMethod {
 
         return sujeto;
     }
+
+    @Override
+    public String getName(){
+        return "Inversión";
+    }
 }

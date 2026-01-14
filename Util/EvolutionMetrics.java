@@ -87,7 +87,6 @@ public class EvolutionMetrics {
         return Math.sqrt(variance);
     }
 
-
     /** Calcula la distancia entre dos caminos como la proporción de ciudades en posiciones diferentes */
     private double calculatePathDistance(Path p1, Path p2) {
         int differences = 0;
@@ -101,6 +100,17 @@ public class EvolutionMetrics {
         }
         return (double) differences / path1.size();
     }
+
+    /** Obtiene el mejor fitness de la generación inicial */
+    public double getInitialBestFitness() {
+        return bestFitnessList.isEmpty() ? 0.0 : bestFitnessList.getFirst();
+    }
+
+    /** Obtiene el mejor fitness de la generación final */
+    public double getFinalBestFitness() {
+        return bestFitnessList.isEmpty() ? 0.0 : bestFitnessList.getLast();
+    }
+
 
     public List<Double> getBestFitnessList() { return bestFitnessList; }
     public List<Double> getAvgFitnessList() { return avgFitnessList; }

@@ -12,10 +12,11 @@ public class Population {
     private final double crossProb;
     private final int generations;
 
-    public enum FitnessRegime {
+   /* public enum FitnessRegime {
         MUY_SIMILARES,
         VARIACION_MEDIA_ALTA
     }
+    */
 
     public Population(ArrayList<Path> possiblePaths, double mutProb, double crossProb, int generations) {
         this.possiblePaths = possiblePaths;
@@ -70,11 +71,13 @@ public class Population {
         }
     }
 
+
     /**
      * Determina el régimen de fitness basado en la variabilidad de los costos de los caminos en la población.
      *
      * @return El régimen de fitness determinado.
      */
+    /*
     public FitnessRegime determinarRegimenFitnessPorCosto() {
         if (possiblePaths == null || possiblePaths.isEmpty()) {
             return FitnessRegime.MUY_SIMILARES;
@@ -104,9 +107,11 @@ public class Population {
         }
     }
 
+
     /**
      * Aplica la función de fitness a los caminos de la población según el régimen determinado.
      */
+    /*
     public void aplicarFitnessSegunRegimen() {
         FitnessRegime regime = determinarRegimenFitnessPorCosto();
 
@@ -137,6 +142,7 @@ public class Population {
             }
         }
     }
+    */
 
     /** Devuelve una copia de la lista de caminos en la población */
     public ArrayList<Path> getPaths(){

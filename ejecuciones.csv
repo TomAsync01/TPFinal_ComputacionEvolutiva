@@ -1,0 +1,2 @@
+Fecha,Archivo,N(cantidad de individuos),G(generaciones),MutProb,CrossProb,Seleccion,Cruce,Mutacion,Supervivientes,FitnessInicial,FitnessFinal,Mejora,TiempoMs,PorcentajeNN,TamanioTorneo,NumReemplazoSteadyState
+2026-01-13 21:04:51,br17.atsp,20,1000,0,050,0,600,Torneo,PMX,Inversión,Steady-State,0,0059,0,0256,335,90%,177,0.0,2,3

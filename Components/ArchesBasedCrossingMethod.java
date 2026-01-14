@@ -180,4 +180,9 @@ public class ArchesBasedCrossingMethod implements CrossMethod {
             arcos.remove(elemento);
         }
     }
+
+    @Override
+    public String getName(){
+        return "Cruce basado en arcos";
+    }
 }

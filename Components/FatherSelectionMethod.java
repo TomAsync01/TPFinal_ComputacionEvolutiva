@@ -5,4 +5,5 @@ import java.util.ArrayList;
 
 public interface FatherSelectionMethod {
     Path selectFather(ArrayList<Path> population);
+    String getName();
 }

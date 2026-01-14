@@ -41,4 +41,9 @@ public class ElitismSurvivorMethod implements SurvivorsSelectionMethod {
     public int getNumeroElite() {
         return numeroElite;
     }
+
+    @Override
+    public String getName(){
+        return "Elitismo";
+    }
 }

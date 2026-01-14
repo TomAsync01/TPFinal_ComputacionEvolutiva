@@ -36,6 +36,7 @@ public class Path {
         }
         shuffleCities();
         calculateCost();
+        calculateFitness();
     }
 
     /** Constructor para crear un camino con una lista específica de ciudades (en el caso de cruce) */
@@ -56,6 +57,7 @@ public class Path {
         this.costs = costs;
         this.cities = new ArrayList<>(citiesList);
         calculateCost();
+        calculateFitness();
     }
 
     /** Baraja aleatoriamente el orden de las ciudades en el camino */
@@ -82,6 +84,10 @@ public class Path {
             total += costs[last][first];
         }
         pathCost = total;
+    }
+
+    private void calculateFitness(){
+        this.fitness = (double) 1 /pathCost;
     }
 
     /** Crea un camino utilizando el algoritmo del vecino más cercano */

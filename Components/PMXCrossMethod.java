@@ -116,4 +116,9 @@ public class PMXCrossMethod implements CrossMethod {
         }
         return false;
     }
+
+    @Override
+    public String getName(){
+        return "PMX";
+    }
 }

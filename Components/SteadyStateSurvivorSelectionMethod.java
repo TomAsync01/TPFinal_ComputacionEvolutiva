@@ -111,4 +111,9 @@ public class SteadyStateSurvivorSelectionMethod implements SurvivorsSelectionMet
     public int getNumReemplazo() {
         return numReemplazo;
     }
+
+    @Override
+    public String getName(){
+        return "Steady-State";
+    }
 }

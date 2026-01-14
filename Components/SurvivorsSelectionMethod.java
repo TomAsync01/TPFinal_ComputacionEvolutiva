@@ -6,5 +6,6 @@ import Model.Path;
 
 public interface SurvivorsSelectionMethod {
     ArrayList<Path> selectSurvivors(ArrayList<Path> generacionVieja, ArrayList<Path> hijos);
+    String getName();
 }
 

@@ -39,7 +39,7 @@ public class EvolutionChart {
         html.append("<div class='container'>\n");
         html.append("    <h1>Evolución del Algoritmo Genético - ").append(problemName).append("</h1>\n");
 
-        // Gráfico de Fitness
+        // Gráfico de Mejor Fitness
         html.append("    <div class='chart-container'>\n");
         html.append("        <canvas id='fitnessChart'></canvas>\n");
         html.append("    </div>\n");
@@ -73,6 +73,10 @@ public class EvolutionChart {
         StringBuilder stats = new StringBuilder();
         stats.append("    <div class='stats'>\n");
         stats.append("        <div class='stat-card'>\n");
+        stats.append("            <div class='stat-label'>Mejor Fitness Inicial</div>\n");
+        stats.append("            <div class='stat-value'>").append(String.format("%.2e", initialFitness)).append("</div>\n");
+        stats.append("        </div>\n");
+        stats.append("        <div class='stat-card'>\n");
         stats.append("            <div class='stat-label'>Mejor Fitness Final</div>\n");
         stats.append("            <div class='stat-value'>").append(String.format("%.2e", bestFitness)).append("</div>\n");
         stats.append("        </div>\n");
@@ -93,51 +97,57 @@ public class EvolutionChart {
         return stats.toString();
     }
 
-
     /** Genera el script JavaScript para los gráficos */
     private static String generateChartScript(EvolutionMetrics metrics) {
         StringBuilder script = new StringBuilder();
 
         script.append("const generations = ").append(metrics.getGenerationList()).append(";\n");
         script.append("const bestFitness = ").append(formatList(metrics.getBestFitnessList())).append(";\n");
-        script.append("const avgFitness = ").append(formatList(metrics.getAvgFitnessList())).append(";\n");
-        script.append("const worstFitness = ").append(formatList(metrics.getWorstFitnessList())).append(";\n");
         script.append("const diversity = ").append(formatList(metrics.getDiversityList())).append(";\n\n");
 
-        // Gráfico de Fitness
+        // Gráfico de Mejor Fitness (sin promedio ni peor)
         script.append("new Chart(document.getElementById('fitnessChart'), {\n");
         script.append("    type: 'line',\n");
         script.append("    data: {\n");
         script.append("        labels: generations,\n");
         script.append("        datasets: [\n");
-        script.append("            { label: 'Mejor Fitness', data: bestFitness, borderColor: 'rgb(75, 192, 192)', backgroundColor: 'rgba(75, 192, 192, 0.1)', borderWidth: 2, fill: true },\n");
-        script.append("            { label: 'Fitness Promedio', data: avgFitness, borderColor: 'rgb(255, 159, 64)', backgroundColor: 'rgba(255, 159, 64, 0.1)', borderWidth: 2, fill: true },\n");
-        script.append("            { label: 'Peor Fitness', data: worstFitness, borderColor: 'rgb(255, 99, 132)', backgroundColor: 'rgba(255, 99, 132, 0.1)', borderWidth: 2, fill: true }\n");
+        script.append("            {\n");
+        script.append("                label: 'Mejor Fitness',\n");
+        script.append("                data: bestFitness,\n");
+        script.append("                borderColor: 'rgb(75, 192, 192)',\n");
+        script.append("                backgroundColor: 'rgba(75, 192, 192, 0.2)',\n");
+        script.append("                borderWidth: 3,\n");
+        script.append("                fill: true,\n");
+        script.append("                tension: 0.4,\n");
+        script.append("                pointRadius: 2,\n");
+        script.append("                pointHoverRadius: 5\n");
+        script.append("            }\n");
         script.append("        ]\n");
         script.append("    },\n");
         script.append("    options: {\n");
         script.append("        responsive: true,\n");
         script.append("        maintainAspectRatio: false,\n");
         script.append("        plugins: {\n");
-        script.append("            title: { display: true, text: 'Evolución del Fitness', font: { size: 18 } },\n");
-        script.append("            legend: { position: 'top' },\n");
-        // AGREGAR FORMATO CIENTÍFICO
+        script.append("            title: {\n");
+        script.append("                display: true,\n");
+        script.append("                text: 'Evolución del Mejor Fitness',\n");
+        script.append("                font: { size: 18, weight: 'bold' }\n");
+        script.append("            },\n");
+        script.append("            legend: { display: false },\n");
         script.append("            tooltip: {\n");
         script.append("                callbacks: {\n");
         script.append("                    label: function(context) {\n");
-        script.append("                        let label = context.dataset.label || '';\n");
-        script.append("                        if (label) { label += ': '; }\n");
-        script.append("                        label += context.parsed.y.toExponential(4);\n");
-        script.append("                        return label;\n");
+        script.append("                        return 'Fitness: ' + context.parsed.y.toExponential(4);\n");
         script.append("                    }\n");
         script.append("                }\n");
         script.append("            }\n");
         script.append("        },\n");
         script.append("        scales: {\n");
-        script.append("            x: { title: { display: true, text: 'Generación' } },\n");
-        // CAMBIAR EL FORMATO DEL EJE Y
+        script.append("            x: {\n");
+        script.append("                title: { display: true, text: 'Generación', font: { size: 14 } }\n");
+        script.append("            },\n");
         script.append("            y: {\n");
-        script.append("                title: { display: true, text: 'Fitness' },\n");
+        script.append("                title: { display: true, text: 'Fitness', font: { size: 14 } },\n");
         script.append("                ticks: {\n");
         script.append("                    callback: function(value) {\n");
         script.append("                        return value.toExponential(2);\n");
@@ -148,8 +158,7 @@ public class EvolutionChart {
         script.append("    }\n");
         script.append("});\n\n");
 
-        // Gráfico de Diversidad (con bandas de promedio y desviación estándar)
-        script.append("// Gráfico de Diversidad con bandas de promedio y desviación estándar\n");
+        // Gráfico de Diversidad (sin cambios)
         script.append("const avgDiversity = ").append(metrics.getAverageDiversity()).append(";\n");
         script.append("const stdDiversity = ").append(metrics.getDiversityStdDev()).append(";\n");
         script.append("const upperBand = Array(diversity.length).fill(avgDiversity + stdDiversity);\n");
@@ -226,11 +235,10 @@ public class EvolutionChart {
         script.append("            y: { title: { display: true, text: 'Diversidad' }, beginAtZero: false }\n");
         script.append("        }\n");
         script.append("    }\n");
-        script.append("});\n\n");
+        script.append("});\n");
 
         return script.toString();
     }
-
 
     /** Formatea una lista para su inclusión en JavaScript */
     private static String formatList(List<?> list) {

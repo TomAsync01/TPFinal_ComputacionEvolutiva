@@ -34,4 +34,9 @@ public class TournamentMethod implements FatherSelectionMethod{
         return bestSolution;
     }
 
+    @Override
+    public String getName(){
+        return "Torneo";
+    }
+
 }

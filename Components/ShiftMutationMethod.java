@@ -64,4 +64,9 @@ public class ShiftMutationMethod implements MutationMethod {
 
         return sujeto;
     }
+
+    @Override
+    public String getName(){
+        return "Desplazamiento";
+    }
 }

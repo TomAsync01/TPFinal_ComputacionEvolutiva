@@ -9,6 +9,7 @@ import Model.*;
 import Util.ATSPReader;
 import Util.EvolutionChart;
 import Util.EvolutionMetrics;
+import Util.ExecutionLogger;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -28,6 +29,7 @@ public class Main {
 
         System.out.println("Cargando archivo: " + filePath);
         File atspFile = new File(filePath);
+        String fileName = atspFile.getName();
         int[][] costs = ATSPReader.read(atspFile);
         int C = costs.length;
         System.out.println("Número de ciudades a visitar: " + C);
@@ -94,17 +96,18 @@ public class Main {
         System.out.println("--- MÉTODO DE SELECCIÓN DE PADRES ---");
         System.out.print("Elija el método: 1) Torneo  2) Rueda de Ruleta (ingrese 1 o 2): ");
         String opcionSeleccion = scanner.nextLine();
+        Integer tamanioTorneo = null;
 
         FatherSelectionMethod selectionMethod;
         if (opcionSeleccion.equals("1")) {
             System.out.print("Tamaño del torneo (se sugiere valores entre 2 y 10): ");
-            int tamanio = Integer.parseInt(scanner.nextLine());
-            if (tamanio <= 1 || tamanio >= N) {
+            tamanioTorneo = Integer.parseInt(scanner.nextLine());
+            if (tamanioTorneo <= 1 || tamanioTorneo >= N) {
                 System.err.println("El tamaño del torneo no es válido. Saliendo.");
                 scanner.close();
                 return;
             }
-            selectionMethod = new TournamentMethod(tamanio);
+            selectionMethod = new TournamentMethod(tamanioTorneo);
         } else if (opcionSeleccion.equals("2")) {
             selectionMethod = new RouletteWheelMethod();
         } else {
@@ -151,20 +154,22 @@ public class Main {
         System.out.println("-- MÉTODO DE SELECCIÓN DE SUPERVIVIENTES ---");
         System.out.print("Elija el método: 1) Steady-State  2) Elitismo (ingrese 1 o 2): ");
         String opcionSobrevientes = scanner.nextLine();
+        Integer numReemplazoSteadyState = null;
+        Integer elite = null;
 
         SurvivorsSelectionMethod survivorMethod;
         if (opcionSobrevientes.equals("1")) {
             System.out.println("Seleccione el valor de n (cantidad de individuos de la anterior generación a ser reemplazados en la siguiente): ");
-            int numReemplazo = Integer.parseInt(scanner.nextLine());
-            if (numReemplazo >= N || numReemplazo <= 0) {
+            numReemplazoSteadyState = Integer.parseInt(scanner.nextLine());
+            if (numReemplazoSteadyState >= N || numReemplazoSteadyState <= 0) {
                 System.out.println("El valor a reemplazar debe ser menor al tamaño de la población y mayor a 0");
                 scanner.close();
                 return;
             }
-            survivorMethod = new SteadyStateSurvivorSelectionMethod(numReemplazo);
+            survivorMethod = new SteadyStateSurvivorSelectionMethod(numReemplazoSteadyState);
         } else if (opcionSobrevientes.equals("2")) {
             System.out.println("Seleccione el valor de k (cantidad de mejores individuos de la generación a preservar en la siguiente): ");
-            int elite = Integer.parseInt(scanner.nextLine());
+            elite = Integer.parseInt(scanner.nextLine());
             if (elite < 0 || elite > N) {
                 System.out.println("El valor ingresado no es válido. Debe ser superior o igual a 0 y menor al tamaño de la población");
                 scanner.close();
@@ -177,6 +182,8 @@ public class Main {
             return;
         }
 
+        ExecutionLogger logger = new ExecutionLogger();
+
 
         // ========== EJECUCIÓN DEL ALGORITMO ==========
         System.out.println("========================================");
@@ -184,9 +191,11 @@ public class Main {
         System.out.println("========================================");
         System.out.println();
 
+        long inicio_ejecucion = System.currentTimeMillis();
+
         // Inicializar población
         Population p = Population.createMixedPopulation(N, C, costs, mutProb, crossProb, G, porcentajeNN);
-        p.aplicarFitnessSegunRegimen();
+        /*p.aplicarFitnessSegunRegimen();*/
 
         System.out.println("--- POBLACIÓN INICIAL ---");
         p.printPaths();
@@ -236,7 +245,7 @@ public class Main {
             // 3. Reemplazar población
             nuevaGeneracion = survivorMethod.selectSurvivors(p.getPaths(), nuevaGeneracion);
             p.setPaths(nuevaGeneracion);
-            p.aplicarFitnessSegunRegimen();
+            /*p.aplicarFitnessSegunRegimen();*/
 
             // 4. Registrar métricas de evolución
             metricas.recordGeneration(generacion, p);
@@ -252,6 +261,8 @@ public class Main {
             }
         }
 
+        long tiempo_total = System.currentTimeMillis() - inicio_ejecucion;
+
         // Mostrar resultado final
         System.out.println();
         System.out.println("========================================");
@@ -259,6 +270,33 @@ public class Main {
         System.out.println("========================================");
         System.out.println("Mejor solución encontrada:");
         System.out.println(p.getBestPath());
+
+        try {
+            // Guardar en CSV
+            logger.logExecution(fileName, N, G, mutProb, crossProb,
+                    selectionMethod.getName(), crossMethod.getName(),
+                    mutationMethod.getName(), survivorMethod.getName(),
+                    metricas.getInitialBestFitness(), metricas.getFinalBestFitness(),
+                    tiempo_total, porcentajeNN, tamanioTorneo,
+                    numReemplazoSteadyState, elite);
+
+            // Guardar en JSON
+            String json = logger.toJson(fileName, N, G, C, mutProb, crossProb,
+                    selectionMethod.getName(), crossMethod.getName(),
+                    mutationMethod.getName(), survivorMethod.getName(),
+                    metricas.getInitialBestFitness(), metricas.getFinalBestFitness(),
+                    tiempo_total, metricas.getBestFitnessList(),
+                    p.getBestPath().getCities(), porcentajeNN, tamanioTorneo,
+                    numReemplazoSteadyState, elite);
+
+            logger.saveJsonToFile("ejecucion.json", json);
+            logger.saveToFile("ejecuciones.csv");
+
+            System.out.println("Reporte generado en: ejecuciones.csv y JSON");
+        } catch (IOException e) {
+            System.err.println("Error al generar reporte: " + e.getMessage());
+        }
+
 
         // Generar reportes y visualizaciones
         try {
