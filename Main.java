@@ -14,15 +14,43 @@ import Util.ExecutionLogger;
 public class Main {
     public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
+        String filePath = null;
 
         // ========== SECCIÓN 1: CARGAR ARCHIVO ==========
         System.out.println("=== CONFIGURACIÓN DEL ALGORITMO GENÉTICO ===");
         System.out.println();
-        System.out.println("Por favor, ingrese la ruta a un archivo ATSP (sin comillas): ");
-        String filePath = scanner.nextLine();
+        System.out.print("Desea utilizar alguna de las instancias de testeo? (Ingrese S(si) o N(no)): ");
+        String respuesta = scanner.nextLine();
+        if (respuesta.equalsIgnoreCase("S")){
+            System.out.println("Que archivo quiere usar? (ingrese 1 o 2): ");
+            System.out.println(" (1) - br17.atsp (contiene 17 ciudades)");
+            System.out.println(" (2) - p43.atsp (contiene 43 ciudades)");
+            String archivo = scanner.nextLine();
+            if (archivo.equals("1")){
+                filePath = "Util/br17.atsp";
+            }
+            else if (archivo.equals("2")){
+                filePath = "Util/p43.atsp";
+            }
+            else{
+                System.out.println("Valor erróneo ingresado");
+                scanner.close();
+                return;
+            }
+        }
+        else if (respuesta.equalsIgnoreCase("N")) {
 
-        if (!filePath.endsWith(".atsp") || !new File(filePath).isFile()) {
-            System.err.println("Archivo inválido o inexistente. Saliendo.");
+            System.out.println("Por favor, ingrese la ruta a un archivo ATSP (sin comillas): ");
+            filePath = scanner.nextLine();
+
+            if (!filePath.endsWith(".atsp") || !new File(filePath).isFile()) {
+                System.err.println("Archivo inválido o inexistente. Saliendo.");
+                scanner.close();
+                return;
+            }
+        }
+        else {
+            System.out.println("Valor erróneo ingresado");
             scanner.close();
             return;
         }
@@ -272,39 +300,33 @@ public class Main {
         System.out.println(p.getBestPath());
 
         try {
-            // Guardar en CSV
-            logger.logExecution(fileName, N, G, mutProb, crossProb,
-                    selectionMethod.getName(), crossMethod.getName(),
-                    mutationMethod.getName(), survivorMethod.getName(),
-                    metricas.getInitialBestFitness(), metricas.getFinalBestFitness(),
-                    tiempo_total, porcentajeNN, tamanioTorneo,
-                    numReemplazoSteadyState, elite);
+            // Crear carpeta para esta ejecución
+            File carpetaEjecucion = crearCarpetaEjecucion();
+            System.out.println("Guardando resultados en: " + carpetaEjecucion.getPath());
 
             // Guardar en JSON
             String json = logger.toJson(fileName, N, G, C, mutProb, crossProb,
                     selectionMethod.getName(), crossMethod.getName(),
                     mutationMethod.getName(), survivorMethod.getName(),
-                    metricas.getInitialBestFitness(), metricas.getFinalBestFitness(),
+                    metricas.getFinalBestFitness(),
                     tiempo_total, metricas.getBestFitnessList(),
                     p.getBestPath().getCities(), porcentajeNN, tamanioTorneo,
-                    numReemplazoSteadyState, elite);
+                    numReemplazoSteadyState, elite, p.getBestPath().getPathCost());
 
-            logger.saveJsonToFile("ejecucion.json", json);
-            logger.saveToFile("ejecuciones.csv");
+            File jsonFile = new File(carpetaEjecucion, "ejecucion.json");
+            logger.saveJsonToFile(jsonFile.getPath(), json);
 
-            System.out.println("Reporte generado en: ejecuciones.csv y JSON");
+            // Generar HTML
+            File htmlFile = new File(carpetaEjecucion, "evolucion.html");
+            EvolutionChart.generateHTML(metricas, htmlFile.getPath(), new File(filePath).getName());
+
+            System.out.println("Reporte generado en: " + carpetaEjecucion.getPath());
+            System.out.println("  - " + jsonFile.getName());
+            System.out.println("  - " + htmlFile.getName());
         } catch (IOException e) {
             System.err.println("Error al generar reporte: " + e.getMessage());
         }
 
-
-        // Generar reportes y visualizaciones
-        try {
-            EvolutionChart.generateHTML(metricas, "evolucion.html", new File(filePath).getName());
-            System.out.println("Visualización HTML generada en: evolucion.html");
-        } catch (IOException e) {
-            System.err.println("Error al generar reporte: " + e.getMessage());
-        }
 
         scanner.close();
 
@@ -323,4 +345,26 @@ public class Main {
         }
         return parejas;
     }
+
+    private static File crearCarpetaEjecucion() {
+        File testsDir = new File("Tests");
+        if (!testsDir.exists()) {
+            testsDir.mkdirs();
+        }
+
+        int numeroEjecucion = 1;
+        File carpetaEjecucion;
+
+        // Buscar el siguiente número de ejecución disponible
+        do {
+            carpetaEjecucion = new File(testsDir, "ejecucion" + numeroEjecucion);
+            numeroEjecucion++;
+        } while (carpetaEjecucion.exists());
+
+        // Crear la carpeta
+        carpetaEjecucion.mkdirs();
+
+        return carpetaEjecucion;
+    }
+
 }

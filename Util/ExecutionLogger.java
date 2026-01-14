@@ -61,10 +61,10 @@ public class ExecutionLogger {
 
     public String toJson(String archivo, int N, int G, int C, double mutProb, double crossProb,
                          String seleccion, String cruce, String mutacion, String supervivientes,
-                         double initialBestFitness, double finalBestFitness, long executionTime,
+                         double finalBestFitness, long executionTime,
                          List<Double> fitnessEvolution, ArrayList<Integer> bestSolution,
                          Double porcentajeNN, Integer tamanioTorneo,
-                         Integer numReemplazoSteadyState, Integer elite) {
+                         Integer numReemplazoSteadyState, Integer elite, int bestCost) {
 
         StringBuilder json = new StringBuilder();
         json.append("{\n");
@@ -106,21 +106,14 @@ public class ExecutionLogger {
 
         json.append("  },\n");
 
-        // Métricas
-        double mejora = ((finalBestFitness - initialBestFitness) / initialBestFitness) * 100;
-        json.append("  \"metricas\": {\n");
-        json.append("    \"MejorfitnessInicial\": ").append(initialBestFitness).append(",\n");
-        json.append("    \"MejorfitnessFinal\": ").append(finalBestFitness).append(",\n");
-        json.append("    \"mejora(%)\": ").append(String.format("%.2f", mejora)).append(",\n");
-        json.append("    \"tiempoEjecucionMs\": ").append(executionTime).append("\n");
-        json.append("  },\n");
-
         // Evolución del fitness
         json.append("  \"evolucionFitness\": [");
-        json.append(fitnessEvolution.stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining(", ")));
-        json.append("],\n");
+        for (int i = 0; i < fitnessEvolution.size(); i++) {
+            json.append("\n    {\"generacion\": ").append(i)
+                    .append(", \"fitness\": ").append(fitnessEvolution.get(i)).append("}");
+            if (i < fitnessEvolution.size() - 1) json.append(",");
+        }
+        json.append("\n  ],\n");
 
         // Mejor solución
         json.append("  \"mejorSolucion\": [");
@@ -128,15 +121,20 @@ public class ExecutionLogger {
             json.append(bestSolution.get(i));
             if (i < bestSolution.size() - 1) json.append(", ");
         }
-        json.append("]\n");
+        json.append("],\n");
+
+        // Fitness de la mejor solución
+        json.append("  \"fitnessMejorSolucion\": ").append(finalBestFitness).append(",\n");
+
+        //Costo de la mejor solución
+        json.append("  \"costoMejorSolucion\": ").append(bestCost).append(",\n");
+
+        // Tiempo requerido de ejecución
+        json.append("  \"tiempoEjecucionMs\": ").append(executionTime).append("\n");
 
         json.append("}");
 
         return json.toString();
-    }
-
-    public void saveToFile(String filename) throws IOException {
-        Files.write(Paths.get(filename), logData.toString().getBytes());
     }
 
     public void saveJsonToFile(String filename, String jsonContent) throws IOException {

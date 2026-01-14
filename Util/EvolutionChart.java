@@ -49,9 +49,6 @@ public class EvolutionChart {
         html.append("        <canvas id='diversityChart'></canvas>\n");
         html.append("    </div>\n");
 
-        // Estadísticas
-        html.append(generateStats(metrics));
-
         html.append("</div>\n");
         html.append("<script>\n");
         html.append(generateChartScript(metrics));
@@ -61,40 +58,6 @@ public class EvolutionChart {
         try (FileWriter writer = new FileWriter(filename)) {
             writer.write(html.toString());
         }
-    }
-
-    /** Genera el bloque HTML con las estadísticas resumen */
-    private static String generateStats(EvolutionMetrics metrics) {
-        List<Double> bestList = metrics.getBestFitnessList();
-        double bestFitness = bestList.getLast();
-        double initialFitness = bestList.getFirst();
-        double improvement = ((bestFitness - initialFitness) / initialFitness) * 100;
-
-        StringBuilder stats = new StringBuilder();
-        stats.append("    <div class='stats'>\n");
-        stats.append("        <div class='stat-card'>\n");
-        stats.append("            <div class='stat-label'>Mejor Fitness Inicial</div>\n");
-        stats.append("            <div class='stat-value'>").append(String.format("%.2e", initialFitness)).append("</div>\n");
-        stats.append("        </div>\n");
-        stats.append("        <div class='stat-card'>\n");
-        stats.append("            <div class='stat-label'>Mejor Fitness Final</div>\n");
-        stats.append("            <div class='stat-value'>").append(String.format("%.2e", bestFitness)).append("</div>\n");
-        stats.append("        </div>\n");
-        stats.append("        <div class='stat-card'>\n");
-        stats.append("            <div class='stat-label'>Mejora Total (%)</div>\n");
-        stats.append("            <div class='stat-value'>").append(String.format("%.2f%%", improvement)).append("</div>\n");
-        stats.append("        </div>\n");
-        stats.append("        <div class='stat-card'>\n");
-        stats.append("            <div class='stat-label'>Generaciones</div>\n");
-        stats.append("            <div class='stat-value'>").append(metrics.getGenerationList().size()).append("</div>\n");
-        stats.append("        </div>\n");
-        stats.append("        <div class='stat-card'>\n");
-        stats.append("            <div class='stat-label'>Diversidad Final</div>\n");
-        stats.append("            <div class='stat-value'>").append(String.format("%.4f", metrics.getDiversityList().getLast())).append("</div>\n");
-        stats.append("        </div>\n");
-        stats.append("    </div>\n");
-
-        return stats.toString();
     }
 
     /** Genera el script JavaScript para los gráficos */
@@ -158,11 +121,8 @@ public class EvolutionChart {
         script.append("    }\n");
         script.append("});\n\n");
 
-        // Gráfico de Diversidad (sin cambios)
+        // Gráfico de Diversidad
         script.append("const avgDiversity = ").append(metrics.getAverageDiversity()).append(";\n");
-        script.append("const stdDiversity = ").append(metrics.getDiversityStdDev()).append(";\n");
-        script.append("const upperBand = Array(diversity.length).fill(avgDiversity + stdDiversity);\n");
-        script.append("const lowerBand = Array(diversity.length).fill(avgDiversity - stdDiversity);\n");
         script.append("const avgLine = Array(diversity.length).fill(avgDiversity);\n\n");
 
         script.append("new Chart(document.getElementById('diversityChart'), {\n");
@@ -189,26 +149,6 @@ public class EvolutionChart {
         script.append("                fill: false,\n");
         script.append("                pointRadius: 0\n");
         script.append("            },\n");
-        script.append("            {\n");
-        script.append("                label: 'Banda Superior (μ + σ)',\n");
-        script.append("                data: upperBand,\n");
-        script.append("                borderColor: 'rgba(75, 192, 192, 0.3)',\n");
-        script.append("                backgroundColor: 'rgba(75, 192, 192, 0.1)',\n");
-        script.append("                borderWidth: 1,\n");
-        script.append("                borderDash: [10, 5],\n");
-        script.append("                fill: '+1',\n");
-        script.append("                pointRadius: 0\n");
-        script.append("            },\n");
-        script.append("            {\n");
-        script.append("                label: 'Banda Inferior (μ - σ)',\n");
-        script.append("                data: lowerBand,\n");
-        script.append("                borderColor: 'rgba(75, 192, 192, 0.3)',\n");
-        script.append("                backgroundColor: 'rgba(75, 192, 192, 0.1)',\n");
-        script.append("                borderWidth: 1,\n");
-        script.append("                borderDash: [10, 5],\n");
-        script.append("                fill: false,\n");
-        script.append("                pointRadius: 0\n");
-        script.append("            }\n");
         script.append("        ]\n");
         script.append("    },\n");
         script.append("    options: {\n");
@@ -218,7 +158,7 @@ public class EvolutionChart {
         script.append("        plugins: {\n");
         script.append("            title: {\n");
         script.append("                display: true,\n");
-        script.append("                text: 'Evolución de la Diversidad con Banda de Referencia',\n");
+        script.append("                text: 'Evolución de la Diversidad de la Población',\n");
         script.append("                font: { size: 18 }\n");
         script.append("            },\n");
         script.append("            legend: { position: 'top' },\n");
