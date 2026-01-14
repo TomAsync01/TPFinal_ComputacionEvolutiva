@@ -295,9 +295,6 @@ public class Main {
         System.out.println();
         System.out.println("========================================");
         System.out.println("RESULTADO FINAL");
-        System.out.println("========================================");
-        System.out.println("Mejor solución encontrada:");
-        System.out.println(p.getBestPath());
 
         try {
             // Crear carpeta para esta ejecución
