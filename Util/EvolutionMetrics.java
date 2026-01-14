@@ -12,8 +12,6 @@ import java.util.List;
  */
 public class EvolutionMetrics {
     private List<Double> bestFitnessList = new ArrayList<>();
-    private List<Double> avgFitnessList = new ArrayList<>();
-    private List<Double> worstFitnessList = new ArrayList<>();
     private List<Double> diversityList = new ArrayList<>();
     private List<Integer> generationList = new ArrayList<>();
     private List<Long> timeList = new ArrayList<>();
@@ -29,24 +27,14 @@ public class EvolutionMetrics {
         generationList.add(generation);
 
         double best = population.getBestPath().getFitness();
-        double avg = calculateAverage(population);
         double worst = population.getWorstPath().getFitness();
         double diversity = calculateDiversity(population);
 
         bestFitnessList.add(best);
-        avgFitnessList.add(avg);
-        worstFitnessList.add(worst);
         diversityList.add(diversity);
         timeList.add(System.currentTimeMillis() - startTime);
     }
 
-    /** Calcula el fitness promedio de la población */
-    private double calculateAverage(Population population) {
-        return population.getPaths().stream()
-                .mapToDouble(Path::getFitness)
-                .average()
-                .orElse(0.0);
-    }
 
     /** Calcula la diversidad de la población basada en la distancia promedio entre caminos */
     private double calculateDiversity(Population population) {
@@ -74,19 +62,6 @@ public class EvolutionMetrics {
                 .orElse(0.0);
     }
 
-    /** Calcula la desviación estándar de la diversidad */
-    public double getDiversityStdDev() {
-        if (diversityList.isEmpty()) return 0.0;
-
-        double avg = getAverageDiversity();
-        double variance = diversityList.stream()
-                .mapToDouble(d -> Math.pow(d - avg, 2))
-                .average()
-                .orElse(0.0);
-
-        return Math.sqrt(variance);
-    }
-
     /** Calcula la distancia entre dos caminos como la proporción de ciudades en posiciones diferentes */
     private double calculatePathDistance(Path p1, Path p2) {
         int differences = 0;
@@ -101,11 +76,6 @@ public class EvolutionMetrics {
         return (double) differences / path1.size();
     }
 
-    /** Obtiene el mejor fitness de la generación inicial */
-    public double getInitialBestFitness() {
-        return bestFitnessList.isEmpty() ? 0.0 : bestFitnessList.getFirst();
-    }
-
     /** Obtiene el mejor fitness de la generación final */
     public double getFinalBestFitness() {
         return bestFitnessList.isEmpty() ? 0.0 : bestFitnessList.getLast();
@@ -113,8 +83,6 @@ public class EvolutionMetrics {
 
 
     public List<Double> getBestFitnessList() { return bestFitnessList; }
-    public List<Double> getAvgFitnessList() { return avgFitnessList; }
-    public List<Double> getWorstFitnessList() { return worstFitnessList; }
     public List<Double> getDiversityList() { return diversityList; }
     public List<Integer> getGenerationList() { return generationList; }
 }
