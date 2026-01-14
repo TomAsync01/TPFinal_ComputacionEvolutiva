@@ -25,23 +25,20 @@ Este proyecto implementa un algoritmo genético completo con visualización web 
 - **Parámetros configurables**: Tamaño de población, generaciones, probabilidades de mutación y cruce
 
 ### 📊 Visualización y Análisis
-- **Gráficos interactivos**: Generación automática de visualizaciones HTML con Chart.js
-- **Métricas de evolución**: Tracking de mejor, promedio y peor fitness por generación
+- **Gráficos interactivos**: Generación automática de visualizaciones HTML para evolución del fitness de la población
 - **Análisis de diversidad**: Cálculo y visualización de diversidad poblacional
-- **Dashboard de estadísticas**: Tarjetas con métricas clave (mejora total, fitness final, etc.)
-- **Exportación de datos**: Logs en CSV y JSON para análisis posterior
+- **Exportación de datos**: Logs en JSON para análisis posterior
 
 ### 🔧 Utilidades
 - **ExecutionLogger**: Sistema de logging configurable para registrar experimentos
 - **EvolutionMetrics**: Seguimiento detallado de métricas evolutivas
 - **EvolutionChart**: Generación automática de gráficos HTML interactivos
-- **ATSPReader**: Lector robusto de archivos ATSP
+- **ATSPReader**: Lector de archivos ATSP
 
 ## 🏗️ Estructura del Proyecto
 
 ```
 ├── Main.java                              # Punto de entrada, configuración y ejecución del algoritmo
-├── evolucion.html                         # Archivo HTML de visualización generado
 ├── Model/
 │   ├── Population.java                    # Manejo de la población y evolución
 │   ├── Path.java                          # Representación de un camino y cálculo de fitness
@@ -65,9 +62,8 @@ Este proyecto implementa un algoritmo genético completo con visualización web 
 │   ├── EvolutionChart.java                # Generador de gráficos HTML
 │   ├── ExecutionLogger.java               # Sistema de logging de experimentos
 │   ├── br17.atsp                          # Instancia de prueba (17 ciudades)
-│   ├── p43.atsp                           # Instancia de prueba (43 ciudades)
-│   └── test4.atsp                         # Instancia de prueba (4 ciudades)
-└── Tests/                                 # Directorio de pruebas y experimentos
+│   └── p43.atsp                           # Instancia de prueba (43 ciudades)
+└── Tests/                                 # Directorio de pruebas
 ```
 
 ## 🚀 Uso
@@ -104,71 +100,39 @@ El programa solicita interactivamente los siguientes parámetros:
     - `1` - Elitismo (con elite configurable)
     - `2` - Steady State (con reemplazo configurable)
 
-### Ejemplo de Ejecución
-
-```
-=== CONFIGURACIÓN DEL ALGORITMO GENÉTICO ===
-
-Por favor, ingrese la ruta a un archivo ATSP (sin comillas): 
-Util/br17.atsp
-Cargando archivo: Util/br17.atsp
-Número de ciudades a visitar: 17
-
---- PARÁMETROS DEL ALGORITMO ---
-Número de individuos (ej. 10): 50
-Número de generaciones (ej. 1000): 1000
-Probabilidad de mutación (ej. 0.05): 0.1
-Probabilidad de cruce (ej. 0.6): 0.7
-
---- MÉTODO DE INICIALIZACIÓN ---
-Elija el método: 1) Aleatorio  2) Mixta con vecino más cercano (ingrese 1 o 2): 2
-Ingrese el porcentaje de individuos con vecino más cercano (ej. 0.1): 0.2
-...
-```
-
 ### Visualización de Resultados
 
 Al finalizar la ejecución, el programa genera automáticamente:
 
 1. **`evolucion.html`**: Archivo HTML con gráficos interactivos que incluye:
-   - 📈 Gráfico de evolución del fitness (mejor, promedio, peor)
-   - 🔄 Gráfico de diversidad poblacional
-   - 📊 Dashboard con estadísticas clave:
-     - Fitness inicial vs. final
-     - Mejora porcentual total
-     - Número de generaciones ejecutadas
-     - Diversidad final de la población
-
-2. **Logs en consola**: Métricas detalladas de cada generación durante la ejecución
-
+   - Gráfico de evolución del mejor fitness
+   - Gráfico de evolución de la diversidad poblacional
+  
 Para visualizar los gráficos, simplemente abre el archivo `evolucion.html` en tu navegador web.
+
+2. **`ejecucion.json`**: Archivo JSON con información de loggueo de la ejecución que incluye:
+   - Parámetros de configueración
+   - Métodos de selección de padres y de selección de supervivientes
+   - Operadores de cruce y de mutación
+   - Evolución del fitness
+   - Mejor solución encontrada (orden de ciudades visitadas, su fitness y el costo total del camino)
+  
+Ambos archivos se pueden encontrar en la carpeta **Tests/ejecucionX** con X el número de ejecuciones realizadas con anterioridad. Nota: En la primera ejecución se creará de forma automática la carpeta Tests con la carpeta ejecución1, que contendrá estos archivos
 
 ## 📊 Métricas y Análisis
 
 ### Métricas Registradas
 
 - **Best Fitness**: Mejor fitness en cada generación
-- **Average Fitness**: Fitness promedio de la población
-- **Worst Fitness**: Peor fitness en cada generación
 - **Diversity**: Medida de diversidad poblacional (distancia promedio entre individuos)
 - **Execution Time**: Tiempo transcurrido en milisegundos
-- **Improvement**: Porcentaje de mejora desde el inicio
-
-### Visualizaciones Disponibles
-
-Los gráficos HTML generados incluyen:
-- **Chart.js interactivo**: Zoom, hover tooltips, leyendas dinámicas
-- **Diseño responsivo**: Se adapta a diferentes tamaños de pantalla
-- **Animaciones suaves**: Transiciones y efectos visuales
-- **Tarjetas de estadísticas**: Métricas clave destacadas con gradientes
 
 ## 🧪 Archivos de Prueba
 
-El proyecto incluye tres instancias de prueba en formato ATSP:
+El proyecto incluye tres instancias de prueba de la literatura clásica en formato ATSP:
 
-- **`test4.atsp`**: 4 ciudades (ideal para debugging)
-- **`br17.atsp`**: 17 ciudades (problema clásico de Repetto)
-- **`p43.atsp`**: 43 ciudades (problema más complejo de Repetto & Pekny)
+- **`br17.atsp`**: 17 ciudades
+- **`p43.atsp`**: 43 ciudades
 
 ## 🔬 Detalles de Implementación
 
@@ -187,7 +151,7 @@ El proyecto incluye tres instancias de prueba en formato ATSP:
 5. **Reproducción**: Aplica operadores de cruce y mutación
 6. **Reemplazo**: Selecciona supervivientes para la siguiente generación
 7. **Repetir** pasos 2-6 por G generaciones
-8. **Visualización**: Genera gráficos HTML con la evolución
+8. **Visualización**: Genera gráficos HTML con la evolución del algoritmo y archivo JSON con reporte de la ejecución
 
 ### Operadores Genéticos
 
@@ -198,41 +162,13 @@ El proyecto incluye tres instancias de prueba en formato ATSP:
 - **Elitismo**: Preserva los mejores individuos entre generaciones
 - **Steady State**: Reemplaza solo un subconjunto de la población
 
-## 🎨 Tecnologías Utilizadas
-
-- **Java 8+**: Lenguaje de programación principal
-- **Chart.js**: Biblioteca JavaScript para gráficos interactivos
-- **HTML5/CSS3**: Visualización web moderna
-- **TSPLIB**: Formato estándar para problemas TSP
-
-## 📈 Composición del Repositorio
-
-- **90.5% HTML**: Archivos de visualización generados
-- **9.5% Java**: Código fuente del algoritmo evolutivo
-
-## 📝 Requisitos
+## Requisitos
 
 - **Java 8 o superior**
-- **Navegador web moderno** (para visualización HTML)
-- **No requiere librerías externas Java** (solo Chart.js vía CDN para gráficos)
+- **No requiere librerías externas Java**
 
-## 👨‍💻 Autor
+## Autor
 
 **Antúnez Monges, Tomás**  
 Trabajo final - Introducción a la Computación Evolutiva  
 Ingeniería de Sistemas, Facultad de Ciencias Exactas, UNCPBA
-
-## 📄 Licencia
-
-Proyecto académico - UNCPBA
-
----
-
-## 🚀 Mejoras Futuras
-
-- [ ] Exportación de resultados en formatos adicionales (CSV, JSON)
-- [ ] Comparación visual entre múltiples ejecuciones
-- [ ] Más operadores genéticos (OX, CX, etc.)
-- [ ] Paralelización del algoritmo
-- [ ] Interfaz gráfica completa (GUI)
-- [ ] Soporte para TSP simétrico (STSP)
