@@ -2,43 +2,38 @@ package Util;
 
 import Model.Population;
 import Model.Path;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Clase para rastrear y almacenar métricas de evolución de una población a lo largo de generaciones.
- */
 public class EvolutionMetrics {
     private List<Double> bestFitnessList = new ArrayList<>();
     private List<Double> diversityList = new ArrayList<>();
     private List<Integer> generationList = new ArrayList<>();
-    private List<Long> timeList = new ArrayList<>();
-    private long startTime;
+    private long tiempoEjecucion;
 
-    /** Inicia el seguimiento del tiempo de evolución */
-    public void startTracking() {
-        startTime = System.currentTimeMillis();
-    }
-
-    /** Registra las métricas de una generación dada */
+    //Registra el mejor fitness y la diversidad de cada generación
     public void recordGeneration(int generation, Population population) {
         generationList.add(generation);
 
         double best = population.getBestPath().getFitness();
-        double worst = population.getWorstPath().getFitness();
         double diversity = calculateDiversity(population);
 
         bestFitnessList.add(best);
         diversityList.add(diversity);
-        timeList.add(System.currentTimeMillis() - startTime);
+    }
+
+    public void startTracking(){
+        tiempoEjecucion = System.currentTimeMillis();
+    }
+
+    public void stopTracking(long fin){
+        tiempoEjecucion = fin - tiempoEjecucion;
     }
 
 
-    /** Calcula la diversidad de la población basada en la distancia promedio entre caminos */
+    //Calcula la diversidad de una generación basándose en la distancia promedio entre los caminos de la población
     private double calculateDiversity(Population population) {
-        List<Path> paths = (List<Path>) population.getPaths();
+        List<Path> paths = population.getPaths();
         int n = paths.size();
         double sumDistances = 0.0;
         int comparisons = 0;
@@ -53,22 +48,27 @@ public class EvolutionMetrics {
         return comparisons > 0 ? sumDistances / comparisons : 0.0;
     }
 
-    /** Calcula la diversidad promedio de todas las generaciones */
+    // Calcula la diversidad promedio de todas la s generaciones
     public double getAverageDiversity() {
-        if (diversityList.isEmpty()) return 0.0;
-        return diversityList.stream()
-                .mapToDouble(Double::doubleValue)
-                .average()
-                .orElse(0.0);
+        if (diversityList.isEmpty()) {
+            return 0.0;
+        }
+
+        double sum = 0.0;
+        for (double diversity : diversityList) {
+            sum += diversity;
+        }
+        return sum / diversityList.size();
     }
 
-    /** Calcula la distancia entre dos caminos como la proporción de ciudades en posiciones diferentes */
+    // Calcula la distancia entre dos caminos
     private double calculatePathDistance(Path p1, Path p2) {
         int differences = 0;
         List<Integer> path1 = p1.getCities();
         List<Integer> path2 = p2.getCities();
 
         for (int i = 0; i < path1.size(); i++) {
+            //Si difieren en una ciudad, se suma 1 a la diferencia
             if (!path1.get(i).equals(path2.get(i))) {
                 differences++;
             }
@@ -76,13 +76,19 @@ public class EvolutionMetrics {
         return (double) differences / path1.size();
     }
 
-    /** Obtiene el mejor fitness de la generación final */
+    // Obtiene el mejor fitness de la generación final
     public double getFinalBestFitness() {
-        return bestFitnessList.isEmpty() ? 0.0 : bestFitnessList.getLast();
+        if (bestFitnessList.isEmpty()){
+            return 0.0;
+        }
+        else {
+            return bestFitnessList.getLast();
+        }
     }
 
 
-    public List<Double> getBestFitnessList() { return bestFitnessList; }
-    public List<Double> getDiversityList() { return diversityList; }
-    public List<Integer> getGenerationList() { return generationList; }
+    public List<Double> getBestFitnessList() { return new ArrayList<Double>(bestFitnessList); }
+    public List<Double> getDiversityList() { return new ArrayList<Double>(diversityList); }
+    public List<Integer> getGenerationList() { return new ArrayList<Integer>(generationList); }
+    public long getTiempoEjecucion(){return tiempoEjecucion;}
 }

@@ -1,15 +1,13 @@
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
 import Components.*;
 import Model.*;
-import Util.ATSPReader;
-import Util.EvolutionChart;
-import Util.EvolutionMetrics;
-import Util.ExecutionLogger;
+import Util.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -63,6 +61,7 @@ public class Main {
         System.out.println("Número de ciudades a visitar: " + C);
         System.out.println();
 
+
         // ========== SECCIÓN 2: PARÁMETROS DEL ALGORITMO ==========
         System.out.println("--- PARÁMETROS DEL ALGORITMO ---");
 
@@ -99,6 +98,7 @@ public class Main {
         }
         System.out.println();
 
+
         // ========== SECCIÓN 3: MÉTODO DE INICIALIZACIÓN ==========
         System.out.println("--- MÉTODO DE INICIALIZACIÓN ---");
         System.out.print("Elija el método: 1) Aleatorio  2) Mixta con vecino más cercano (ingrese 1 o 2): ");
@@ -119,6 +119,7 @@ public class Main {
             return;
         }
         System.out.println();
+
 
         // ========== SECCIÓN 4: MÉTODO DE SELECCIÓN DE PADRES ==========
         System.out.println("--- MÉTODO DE SELECCIÓN DE PADRES ---");
@@ -145,6 +146,7 @@ public class Main {
         }
         System.out.println();
 
+
         // ========== SECCIÓN 5: MÉTODO DE CRUCE ==========
         System.out.println("--- MÉTODO DE CRUCE ---");
         System.out.print("Elija el método: 1) PMX (Partially Mapped Crossover) 2) Cruce Basado en Arcos (ingrese 1 o 2): ");
@@ -160,6 +162,7 @@ public class Main {
             scanner.close();
             return;
         }
+
 
         // ========== SECCIÓN 6: MÉTODO DE MUTACIÓN ==========
         System.out.println("--- MÉTODO DE MUTACIÓN ---");
@@ -177,6 +180,7 @@ public class Main {
             return;
         }
         System.out.println(" ");
+
 
         // ========== SECCIÓN 7: MÉTODO DE SELECCIÓN DE SUPERVIVIENTES ==========
         System.out.println("-- MÉTODO DE SELECCIÓN DE SUPERVIVIENTES ---");
@@ -210,20 +214,24 @@ public class Main {
             return;
         }
 
+        System.out.println("Guardando configuración..");
+        //Guardado de la configuración
+        ExecutionConfig configuracion = new ExecutionConfig(fileName, N, G, C, mutProb, crossProb, selectionMethod.getName(),
+                crossMethod.getName(), mutationMethod.getName(), survivorMethod.getName(), porcentajeNN, tamanioTorneo,
+                numReemplazoSteadyState, elite);
+
         ExecutionLogger logger = new ExecutionLogger();
 
 
         // ========== EJECUCIÓN DEL ALGORITMO ==========
+        System.out.println("  ");
         System.out.println("========================================");
         System.out.println("INICIANDO ALGORITMO GENÉTICO");
         System.out.println("========================================");
         System.out.println();
 
-        long inicio_ejecucion = System.currentTimeMillis();
-
         // Inicializar población
         Population p = Population.createMixedPopulation(N, C, costs, mutProb, crossProb, G, porcentajeNN);
-        /*p.aplicarFitnessSegunRegimen();*/
 
         System.out.println("--- POBLACIÓN INICIAL ---");
         p.printPaths();
@@ -240,7 +248,7 @@ public class Main {
             ArrayList<Path> generatedPaths = p.getPaths();
 
             // 1. Seleccionar padres y formar parejas
-            ArrayList<Couple> parejas = generarParejas(generatedPaths, N, selectionMethod);
+            ArrayList<Couple> parejas = generateCouple(generatedPaths, N, selectionMethod);
 
             // 2. Generar hijos con cruce y mutación
             ArrayList<Path> nuevaGeneracion = new ArrayList<>();
@@ -252,7 +260,7 @@ public class Main {
                 if (random.nextDouble() < crossProb) {
                     hijos = crossMethod.crossCouple(pareja);
                 } else {
-                    // Sin cruce: clonar padres
+                    // Sin cruce, hijos clones de los padres
                     Path hijo1 = new Path(pareja.getPadre1().getCities(), pareja.getPadre1().getCosts());
                     Path hijo2 = new Path(pareja.getPadre2().getCities(), pareja.getPadre2().getCosts());
                     hijos = new ArrayList<>();
@@ -270,50 +278,39 @@ public class Main {
                 nuevaGeneracion.addAll(hijos);
             }
 
-            // 3. Reemplazar población
+            // 3. Reemplazar población y armar la población para la nueva generación
             nuevaGeneracion = survivorMethod.selectSurvivors(p.getPaths(), nuevaGeneracion);
             p.setPaths(nuevaGeneracion);
-            /*p.aplicarFitnessSegunRegimen();*/
 
             // 4. Registrar métricas de evolución
             metricas.recordGeneration(generacion, p);
 
-            // 5. Mostrar progreso periódico cada 100 generaciones
-            if (generacion % 100 == 0) {
-                double mejorFitness = p.getBestPath().getFitness();
-                double diversidad = metricas.getDiversityList().isEmpty() ? 0.0
-                        : metricas.getDiversityList().get(metricas.getDiversityList().size() - 1);
-                System.out.println("Generación " + generacion +
-                        " | Mejor: " + String.format("%.6e", mejorFitness) +
-                        " | Diversidad: " + String.format("%.4f", diversidad));
-            }
         }
 
-        long tiempo_total = System.currentTimeMillis() - inicio_ejecucion;
+        metricas.stopTracking(System.currentTimeMillis());
 
-        // Mostrar resultado final
+        System.out.println("Guardando resultados de la ejecución...");
+        ExecutionResult resultadosEjecucion = new ExecutionResult(metricas.getFinalBestFitness(), p.getBestPath().getPathCost(),
+                metricas.getTiempoEjecucion(), metricas.getBestFitnessList(), p.getBestPath().getCities());
+
+
+
         System.out.println();
         System.out.println("========================================");
         System.out.println("RESULTADO FINAL");
 
         try {
-            // Crear carpeta para esta ejecución
+            // Crear carpeta para la ejecución
             File carpetaEjecucion = crearCarpetaEjecucion();
-            System.out.println("Guardando resultados en: " + carpetaEjecucion.getPath());
+            System.out.println("Resultados almacenados en la carpeta: " + carpetaEjecucion.getPath());
 
             // Guardar en JSON
-            String json = logger.toJson(fileName, N, G, C, mutProb, crossProb,
-                    selectionMethod.getName(), crossMethod.getName(),
-                    mutationMethod.getName(), survivorMethod.getName(),
-                    metricas.getFinalBestFitness(),
-                    tiempo_total, metricas.getBestFitnessList(),
-                    p.getBestPath().getCities(), porcentajeNN, tamanioTorneo,
-                    numReemplazoSteadyState, elite, p.getBestPath().getPathCost());
+            String json = logger.toJson(configuracion, resultadosEjecucion);
 
             File jsonFile = new File(carpetaEjecucion, "ejecucion.json");
             logger.saveJsonToFile(jsonFile.getPath(), json);
 
-            // Generar HTML
+            // Generar HTML con las estadísticas de la ejecución
             File htmlFile = new File(carpetaEjecucion, "evolucion.html");
             EvolutionChart.generateHTML(metricas, htmlFile.getPath(), new File(filePath).getName());
 
@@ -321,7 +318,7 @@ public class Main {
             System.out.println("  - " + jsonFile.getName());
             System.out.println("  - " + htmlFile.getName());
         } catch (IOException e) {
-            System.err.println("Error al generar reporte: " + e.getMessage());
+            System.err.println("Error al generar reporte de los resultados: " + e.getMessage());
         }
 
 
@@ -329,7 +326,7 @@ public class Main {
 
     }
 
-    private static ArrayList<Couple> generarParejas(ArrayList<Path> generatedPaths, int N, FatherSelectionMethod strategy) {
+    private static ArrayList<Couple> generateCouple(ArrayList<Path> generatedPaths, int N, FatherSelectionMethod strategy) {
         ArrayList<Couple> parejas = new ArrayList<>();
         for (int i = 0; i < N / 2; i++) {
             Path padre1 = strategy.selectFather(generatedPaths);
@@ -343,6 +340,7 @@ public class Main {
         return parejas;
     }
 
+    //Crea las carpetas para almacenar los resultados de cada ejecución (.json + .html)
     private static File crearCarpetaEjecucion() {
         File testsDir = new File("Tests");
         if (!testsDir.exists()) {

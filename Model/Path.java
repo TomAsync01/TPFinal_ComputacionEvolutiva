@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-/**
- * Clase que representa un camino en un algoritmo genético para el problema del viajante de comercio (TSP).
- */
 public class Path {
     private final ArrayList<Integer> cities;
     private int pathCost;
@@ -14,7 +11,7 @@ public class Path {
     private final Random random = new Random();
     private final int[][] costs;
 
-    /** Constructor para crear un camino aleatorio */
+    // Camino generado de forma aleatoria
     public Path(int numberOfCities, int[][] costs) {
         if (numberOfCities <= 0) {
             throw new IllegalArgumentException("La cantidad de ciudades debe ser mayor a 0");
@@ -39,7 +36,7 @@ public class Path {
         calculateFitness();
     }
 
-    /** Constructor para crear un camino con una lista específica de ciudades (en el caso de cruce) */
+    // Camino creado de forma definida, según parámetros pasados en invocación (usado para cruce)
     public Path(List<Integer> citiesList, int[][] costs) {
         if (citiesList == null || citiesList.isEmpty()) {
             throw new IllegalArgumentException("La lista de ciudades no puede ser vacía");
@@ -60,7 +57,7 @@ public class Path {
         calculateFitness();
     }
 
-    /** Baraja aleatoriamente el orden de las ciudades en el camino */
+    // Elige aleatoriamente el orden de ciudades
     private void shuffleCities() {
         for (int i = cities.size() - 1; i > 0; i--) {
             int j = random.nextInt(i + 1);
@@ -70,7 +67,7 @@ public class Path {
         }
     }
 
-    /** Calcula el costo total del camino basado en la matriz de costos */
+    // Calcula el costo total de un camino, basándose en la matríz de costos
     private void calculateCost() {
         int total = 0;
         for (int i = 0; i < cities.size() - 1; i++) {
@@ -79,18 +76,19 @@ public class Path {
             total += costs[from][to];
         }
         if (!cities.isEmpty()) {
-            int last = cities.get(cities.size() - 1) - 1;
-            int first = cities.get(0) - 1;
+            int last = cities.getLast() - 1;
+            int first = cities.getFirst() - 1;
             total += costs[last][first];
         }
         pathCost = total;
     }
 
+    // Calcula el fitness de un camino
     private void calculateFitness(){
         this.fitness = (double) 1 /pathCost;
     }
 
-    /** Crea un camino utilizando el algoritmo del vecino más cercano */
+    // Crea un camino usando el método del vecino más cercano
     public static Path createNearestNeighborPath(int startCityIndex0, int[][] costs) {
         int n = costs.length;
         boolean[] visited = new boolean[n];
@@ -121,27 +119,22 @@ public class Path {
         return p;
     }
 
-    /** Obtiene el costo total del camino */
     public int getPathCost() {
         return pathCost;
     }
 
-    /** Obtiene el fitness del camino */
     public double getFitness() {
         return fitness;
     }
 
-    /** Establece el fitness del camino */
     public void setFitness(double fitness) {
         this.fitness = fitness;
     }
 
-    /** Obtiene la lista de ciudades en el camino */
     public ArrayList<Integer> getCities(){
         return cities;
     }
 
-    /** Obtiene la matriz de costos utilizada */
     public int[][] getCosts(){
         return costs;
     }
@@ -160,4 +153,10 @@ public class Path {
         }
         return true;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cities);
+    }
+
 }

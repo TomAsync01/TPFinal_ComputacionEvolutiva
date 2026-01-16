@@ -15,7 +15,7 @@ public class ElitismSurvivorMethod implements SurvivorsSelectionMethod {
     public ArrayList<Path> selectSurvivors(ArrayList<Path> generacionVieja, ArrayList<Path> hijos) {
         int tamanoPoblacion = generacionVieja.size();
 
-        // PASO 1: Seleccionar los mejores de la generación vieja (ÉLITE)
+        // Seleccionar los mejores de la generación vieja (élite)
         ArrayList<Path> poblacionOrdenada = new ArrayList<>(generacionVieja);
         poblacionOrdenada.sort(Comparator.comparingDouble(Path::getFitness).reversed());
 
@@ -24,7 +24,7 @@ public class ElitismSurvivorMethod implements SurvivorsSelectionMethod {
             nuevaPoblacion.add(poblacionOrdenada.get(i));
         }
 
-        // PASO 2: Completar con los mejores hijos
+        // Completar con los mejores hijos
         ArrayList<Path> hijosOrdenados = new ArrayList<>(hijos);
         hijosOrdenados.sort(Comparator.comparingDouble(Path::getFitness).reversed());
 
@@ -36,10 +36,6 @@ public class ElitismSurvivorMethod implements SurvivorsSelectionMethod {
         }
 
         return nuevaPoblacion;
-    }
-
-    public int getNumeroElite() {
-        return numeroElite;
     }
 
     @Override

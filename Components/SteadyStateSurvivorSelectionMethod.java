@@ -15,49 +15,39 @@ public class SteadyStateSurvivorSelectionMethod implements SurvivorsSelectionMet
     public ArrayList<Path> selectSurvivors(ArrayList<Path> generacionVieja, ArrayList<Path> hijos) {
         int tamanoPoblacion = generacionVieja.size();
 
-        // Paso 1: Ordenar población vieja por fitness (peor a mejor = menor a mayor fitness)
+        // Ordenar población vieja por fitness (peor a mejor = menor a mayor fitness)
         ArrayList<Path> poblacionOrdenada = new ArrayList<>(generacionVieja);
         poblacionOrdenada.sort(Comparator.comparingDouble(Path::getFitness));
 
-        // Paso 2: Ordenar hijos por fitness (mejor a peor = mayor a menor fitness)
+        // Ordenar hijos por fitness
         ArrayList<Path> hijosOrdenados = new ArrayList<>(hijos);
         hijosOrdenados.sort(Comparator.comparingDouble(Path::getFitness).reversed());
 
-        // Paso 3: Seleccionar los n mejores hijos (sin duplicados)
-        ArrayList<Path> mejoresHijos = seleccionarMejoresHijosSinDuplicados(
-                hijosOrdenados,
-                numReemplazo,
-                poblacionOrdenada
-        );
+        //Seleccionar los n mejores hijos (sin duplicados para evitar empeorar la diversidad de la población)
+        ArrayList<Path> mejoresHijos = chooseBestChildren(hijosOrdenados, numReemplazo, poblacionOrdenada);
 
-        // Paso 4: Crear nueva población eliminando los n peores
+        // Crear nueva población eliminando los n peores
         ArrayList<Path> nuevaPoblacion = new ArrayList<>();
 
-        // Mantener los mejores (desde posición numReemplazo hasta el final)
+        // Mantener los mejores (desde n hasta el final)
         for (int i = numReemplazo; i < poblacionOrdenada.size(); i++) {
             nuevaPoblacion.add(poblacionOrdenada.get(i));
         }
 
-        // Paso 5: Agregar los mejores hijos
+        // Agregar los mejores hijos
         nuevaPoblacion.addAll(mejoresHijos);
 
         return nuevaPoblacion;
     }
 
-    /**
-     * Selecciona los n mejores hijos evitando duplicados con la población existente.
-     */
-    private ArrayList<Path> seleccionarMejoresHijosSinDuplicados(
-            ArrayList<Path> hijosOrdenados,
-            int cantidad,
-            ArrayList<Path> poblacionExistente
-    ) {
+    // Selecciona los n mejores hijos
+    private ArrayList<Path> chooseBestChildren(ArrayList<Path> hijosOrdenados, int cantidad, ArrayList<Path> poblacionExistente) {
         ArrayList<Path> seleccionados = new ArrayList<>();
-        Set<String> representacionesExistentes = new HashSet<>();
+        Set<Path> pathsExistentes = new HashSet<>();
 
-        // Agregar representaciones de la población existente (excluyendo los que se eliminarán)
+        // Agregar población existente (excluyendo los que se eliminarán)
         for (int i = cantidad; i < poblacionExistente.size(); i++) {
-            representacionesExistentes.add(getRepresentacion(poblacionExistente.get(i)));
+            pathsExistentes.add(poblacionExistente.get(i));
         }
 
         // Seleccionar hijos únicos
@@ -66,10 +56,9 @@ public class SteadyStateSurvivorSelectionMethod implements SurvivorsSelectionMet
                 break;
             }
 
-            String representacion = getRepresentacion(hijo);
-            if (!representacionesExistentes.contains(representacion)) {
+            if (!pathsExistentes.contains(hijo)) {
                 seleccionados.add(hijo);
-                representacionesExistentes.add(representacion);
+                pathsExistentes.add(hijo);
             }
         }
 
@@ -79,7 +68,7 @@ public class SteadyStateSurvivorSelectionMethod implements SurvivorsSelectionMet
                 if (seleccionados.size() >= cantidad) {
                     break;
                 }
-                if (!contienePathExacto(seleccionados, hijo)) {
+                if (!seleccionados.contains(hijo)) {
                     seleccionados.add(hijo);
                 }
             }
@@ -88,29 +77,6 @@ public class SteadyStateSurvivorSelectionMethod implements SurvivorsSelectionMet
         return seleccionados;
     }
 
-    /**
-     * Obtiene una representación string única del path para comparaciones.
-     */
-    private String getRepresentacion(Path path) {
-        return path.getCities().toString();
-    }
-
-    /**
-     * Verifica si un path exacto ya existe en la lista.
-     */
-    private boolean contienePathExacto(ArrayList<Path> lista, Path path) {
-        String representacion = getRepresentacion(path);
-        for (Path p : lista) {
-            if (getRepresentacion(p).equals(representacion)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public int getNumReemplazo() {
-        return numReemplazo;
-    }
 
     @Override
     public String getName(){

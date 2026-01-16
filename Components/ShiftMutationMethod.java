@@ -21,7 +21,7 @@ public class ShiftMutationMethod implements MutationMethod {
             return sujeto; // No se puede hacer desplazamiento con menos de 3 elementos
         }
 
-        // Paso 1: Elegir punto de inicio y fin del segmento a mover
+        // Elegir punto de inicio y fin del segmento a mover
         int inicio = random.nextInt(tamanio);
         int fin = random.nextInt(tamanio);
 
@@ -37,24 +37,24 @@ public class ShiftMutationMethod implements MutationMethod {
             fin = tamanio - 2;
         }
 
-        // Paso 2: Elegir posición destino (fuera del segmento)
+        // Elegir posición destino (fuera del segmento)
         int destino;
         do {
             destino = random.nextInt(tamanio);
         } while (destino >= inicio && destino <= fin);
 
-        // Paso 3: Extraer el segmento a mover
+        // Extraer el segmento a mover
         ArrayList<Integer> segmento = new ArrayList<>();
         for (int i = inicio; i <= fin; i++) {
             segmento.add(ciudades.get(i));
         }
 
-        // Paso 4: Remover el segmento de su posición original
+        // Remover el segmento de su posición original
         for (int i = fin; i >= inicio; i--) {
             ciudades.remove(i);
         }
 
-        // Paso 5: Insertar el segmento en la nueva posición
+        // Insertar el segmento en la nueva posición
         // Ajustar la posición destino si está después del segmento removido
         if (destino > inicio) {
             destino -= segmento.size();

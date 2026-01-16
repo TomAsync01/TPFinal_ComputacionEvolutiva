@@ -21,7 +21,7 @@ public class InvertMutationMethod implements MutationMethod {
         int posicion1 = random.nextInt(tamanio);
         int posicion2 = random.nextInt(tamanio);
 
-        // Asegurar que posicion1 <= posicion2
+        // Asegurarse que posicion1 <= posicion2
         if (posicion1 > posicion2) {
             int temp = posicion1;
             posicion1 = posicion2;
@@ -35,7 +35,7 @@ public class InvertMutationMethod implements MutationMethod {
             ciudades.set(posicion1, ciudades.get(posicion2));
             ciudades.set(posicion2, temp);
 
-            // Avanzar hacia el centro
+            // Avanzar hacia el centro de la lista
             posicion1++;
             posicion2--;
         }

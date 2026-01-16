@@ -6,14 +6,7 @@ import java.util.List;
 
 public class EvolutionChart {
 
-    /**
-     * Genera un archivo HTML con gráficos de la evolución del algoritmo genético.
-     *
-     * @param metrics     Las métricas de evolución a graficar.
-     * @param filename    El nombre del archivo HTML a generar.
-     * @param problemName El nombre del problema para el título del gráfico.
-     * @throws IOException Si ocurre un error al escribir el archivo.
-     */
+    // Genera un archivo HTML con gráficos que muestran la evolución del algoritmo genético
     public static void generateHTML(EvolutionMetrics metrics, String filename, String problemName) throws IOException {
         StringBuilder html = new StringBuilder();
 
@@ -60,7 +53,7 @@ public class EvolutionChart {
         }
     }
 
-    /** Genera el script JavaScript para los gráficos */
+    // Genera el script para los gráficos de evolución del fitness y de la diversidad de la población
     private static String generateChartScript(EvolutionMetrics metrics) {
         StringBuilder script = new StringBuilder();
 
@@ -68,7 +61,7 @@ public class EvolutionChart {
         script.append("const bestFitness = ").append(formatList(metrics.getBestFitnessList())).append(";\n");
         script.append("const diversity = ").append(formatList(metrics.getDiversityList())).append(";\n\n");
 
-        // Gráfico de Mejor Fitness (sin promedio ni peor)
+        // Gráfico de Mejor Fitness
         script.append("new Chart(document.getElementById('fitnessChart'), {\n");
         script.append("    type: 'line',\n");
         script.append("    data: {\n");
@@ -124,7 +117,6 @@ public class EvolutionChart {
         // Gráfico de Diversidad
         script.append("const avgDiversity = ").append(metrics.getAverageDiversity()).append(";\n");
         script.append("const avgLine = Array(diversity.length).fill(avgDiversity);\n\n");
-
         script.append("new Chart(document.getElementById('diversityChart'), {\n");
         script.append("    type: 'line',\n");
         script.append("    data: {\n");
@@ -180,7 +172,7 @@ public class EvolutionChart {
         return script.toString();
     }
 
-    /** Formatea una lista para su inclusión en JavaScript */
+    //Formetea una lista para usarla en JS
     private static String formatList(List<?> list) {
         return list.toString();
     }
