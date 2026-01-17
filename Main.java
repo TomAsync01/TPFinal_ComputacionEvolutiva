@@ -14,11 +14,26 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         String filePath = null;
 
+        System.out.println(" ");
+        System.out.println("Quiere ver que ejecución de las realizadas con anterioridad produjo el mejor costo?(Ingrese S en caso afirmativo o otro caracter para finalizar): ");
+        String respuesta = scanner.nextLine();
+        if (respuesta.equalsIgnoreCase("S")){
+            searchBestExecution();
+            System.out.println(" ");
+            System.out.println("Quiere continuar ejecución?(Ingrese N para salir): ");
+            respuesta = scanner.nextLine();
+            if(respuesta.equalsIgnoreCase("N")){
+                System.out.println("Saliendo..");
+                scanner.close();
+                return;
+            }
+        }
+
         // ========== SECCIÓN 1: CARGAR ARCHIVO ==========
         System.out.println("=== CONFIGURACIÓN DEL ALGORITMO GENÉTICO ===");
         System.out.println();
         System.out.print("Desea utilizar alguna de las instancias de testeo? (Ingrese S(si) o N(no)): ");
-        String respuesta = scanner.nextLine();
+        respuesta = scanner.nextLine();
         if (respuesta.equalsIgnoreCase("S")){
             System.out.println("Que archivo quiere usar? (ingrese 1 o 2): ");
             System.out.println(" (1) - br17.atsp (contiene 17 ciudades)");
@@ -301,7 +316,7 @@ public class Main {
 
         try {
             // Crear carpeta para la ejecución
-            File carpetaEjecucion = crearCarpetaEjecucion();
+            File carpetaEjecucion = createExecutionFolder();
             System.out.println("Resultados almacenados en la carpeta: " + carpetaEjecucion.getPath());
 
             // Guardar en JSON
@@ -321,9 +336,7 @@ public class Main {
             System.err.println("Error al generar reporte de los resultados: " + e.getMessage());
         }
 
-
         scanner.close();
-
     }
 
     private static ArrayList<Couple> generateCouple(ArrayList<Path> generatedPaths, int N, FatherSelectionMethod strategy) {
@@ -341,7 +354,7 @@ public class Main {
     }
 
     //Crea las carpetas para almacenar los resultados de cada ejecución (.json + .html)
-    private static File crearCarpetaEjecucion() {
+    private static File createExecutionFolder() {
         File testsDir = new File("Tests");
         if (!testsDir.exists()) {
             testsDir.mkdirs();
@@ -360,6 +373,70 @@ public class Main {
         carpetaEjecucion.mkdirs();
 
         return carpetaEjecucion;
+    }
+
+    // Busca la/s ejecucion/es que produjeron el menor costo
+    private static void searchBestExecution() {
+        File testsDir = new File("Tests");
+        if (!testsDir.exists() || !testsDir.isDirectory()) {
+            System.out.println("No se encontró la carpeta Tests");
+            return;
+        }
+
+        File[] ejecuciones = testsDir.listFiles(File::isDirectory);
+        if (ejecuciones == null || ejecuciones.length == 0) {
+            System.out.println("No hay ejecuciones registradas en la carpeta Tests");
+            return;
+        }
+
+        ArrayList<String> mejoresEjecuciones = new ArrayList<>();
+        double mejorCosto = Double.MAX_VALUE;
+
+        for (File carpeta : ejecuciones) {
+            File jsonFile = new File(carpeta, "ejecucion.json");
+            if (jsonFile.exists()) {
+                try {
+                    Scanner fileScanner = new Scanner(jsonFile);
+                    StringBuilder jsonContent = new StringBuilder();
+                    while (fileScanner.hasNextLine()) {
+                        jsonContent.append(fileScanner.nextLine());
+                    }
+                    fileScanner.close();
+
+                    // Buscar el costo final en el JSON
+                    String json = jsonContent.toString();
+                    String buscar = "\"costoMejorSolucion\":";
+                    int inicio = json.indexOf(buscar);
+                    if (inicio != -1) {
+                        inicio += buscar.length();
+                        int fin = json.indexOf(",", inicio);
+                        if (fin == -1) fin = json.indexOf("}", inicio);
+                        String costoStr = json.substring(inicio, fin).trim();
+                        double costo = Double.parseDouble(costoStr);
+
+                        if (costo < mejorCosto) {
+                            mejorCosto = costo;
+                            mejoresEjecuciones.clear();
+                            mejoresEjecuciones.add(carpeta.getName());
+                        } else if (costo == mejorCosto) {
+                            mejoresEjecuciones.add(carpeta.getName());
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error al leer " + jsonFile.getPath() + ": " + e.getMessage());
+                }
+            }
+        }
+
+        if (!mejoresEjecuciones.isEmpty()) {
+            if (mejoresEjecuciones.size() == 1) {
+                System.out.println("Mejor ejecución: " + mejoresEjecuciones.getFirst() + " con costo final: " + mejorCosto);
+            } else {
+                System.out.println("Mejores ejecuciones (igual costo): " + String.join(", ", mejoresEjecuciones) + " con costo final: " + mejorCosto);
+            }
+        } else {
+            System.out.println("No se pudo determinar la mejor ejecución");
+        }
     }
 
 }

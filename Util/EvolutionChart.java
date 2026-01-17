@@ -72,7 +72,7 @@ public class EvolutionChart {
         script.append("                data: bestFitness,\n");
         script.append("                borderColor: 'rgb(75, 192, 192)',\n");
         script.append("                backgroundColor: 'rgba(75, 192, 192, 0.2)',\n");
-        script.append("                borderWidth: 2,\n");
+        script.append("                borderWidth: 3,\n");
         script.append("                fill: false,\n");
         script.append("                tension: 0.4,\n");
         script.append("                pointRadius: 0,\n");
