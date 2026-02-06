@@ -14,26 +14,11 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         String filePath = null;
 
-        System.out.println(" ");
-        System.out.println("Quiere ver que ejecución de las realizadas con anterioridad produjo el mejor costo?(Ingrese S en caso afirmativo o otro caracter para finalizar): ");
-        String respuesta = scanner.nextLine();
-        if (respuesta.equalsIgnoreCase("S")){
-            searchBestExecution();
-            System.out.println(" ");
-            System.out.println("Quiere continuar ejecución?(Ingrese N para salir): ");
-            respuesta = scanner.nextLine();
-            if(respuesta.equalsIgnoreCase("N")){
-                System.out.println("Saliendo..");
-                scanner.close();
-                return;
-            }
-        }
-
         // ========== SECCIÓN 1: CARGAR ARCHIVO ==========
         System.out.println("=== CONFIGURACIÓN DEL ALGORITMO GENÉTICO ===");
         System.out.println();
         System.out.print("Desea utilizar alguna de las instancias de testeo? (Ingrese S(si) o N(no)): ");
-        respuesta = scanner.nextLine();
+        String respuesta = scanner.nextLine();
         if (respuesta.equalsIgnoreCase("S")){
             System.out.println("Que archivo quiere usar? (ingrese 1 o 2): ");
             System.out.println(" (1) - br17.atsp (contiene 17 ciudades)");
