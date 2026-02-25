@@ -10,25 +10,24 @@ public class Population {
         this.possiblePaths = possiblePaths;
     }
 
-    // Crea una población mixta de caminos, combinando caminos generados por el método del vecino más cercano y caminos generados aleatoriamente.
-    public static Population createMixedPopulation(int N, int C, int[][] costs, double mutProb, double crossProb, int generations, double porcentajeNN) {
+    // Crea una población mixta de caminos, combinando caminos generados por el método del vecino más cercano y caminos generados aleatoriamente (con semilla fija para reproducibilidad).
+    public static Population createMixedPopulation(int N, int C, int[][] costs, double mutProb, double crossProb, int generations, double porcentajeNN, Random random) {
         int nNN = (int) Math.round(N * porcentajeNN);
         if (nNN > N) nNN = N;
         int nRandom = N - nNN;
 
         ArrayList<Path> paths = new ArrayList<>(N);
-        Random rnd = new Random();
 
         // Generar caminos por vecino más cercano
         for (int i = 0; i < nNN; i++) {
-            int startCity = rnd.nextInt(C);
+            int startCity = random.nextInt(C);
             Path p = Path.createNearestNeighborPath(startCity, costs);
             paths.add(p);
         }
 
-        // Generar caminos al azar
+        // Generar caminos al azar (usando el mismo Random con semilla)
         for (int i = 0; i < nRandom; i++) {
-            Path p = new Path(C, costs);
+            Path p = Path.createRandomPath(C, costs, random);
             paths.add(p);
         }
 

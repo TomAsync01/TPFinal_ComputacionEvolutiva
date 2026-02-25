@@ -8,10 +8,10 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class PMXCrossMethod implements CrossMethod {
-    private Random random;
+    private final Random random;
 
-    public PMXCrossMethod() {
-        this.random = new Random();
+    public PMXCrossMethod(Random random) {
+        this.random = random;
     }
 
     @Override

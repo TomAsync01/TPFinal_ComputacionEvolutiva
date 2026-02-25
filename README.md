@@ -23,6 +23,7 @@ Este proyecto implementa un algoritmo genético completo con visualización web 
   - **Mutación**: Inversión y desplazamiento (shift)
   - **Selección de supervivientes**: Elitismo y Steady State
 - **Parámetros configurables**: Tamaño de población, generaciones, probabilidades de mutación y cruce
+- **Reproducibilidad**: Sistema de semillas aleatorias fijas para garantizar comparaciones justas entre diferentes configuraciones del algoritmo
 
 ### Visualización y Análisis
 - **Gráficos interactivos**: Generación automática de visualizaciones HTML para evolución del fitness de la población
@@ -31,9 +32,12 @@ Este proyecto implementa un algoritmo genético completo con visualización web 
 
 ### Utilidades
 - **ExecutionLogger**: Sistema de logging configurable para registrar experimentos
-- **EvolutionMetrics**: Seguimiento detallado de métricas evolutivas
-- **EvolutionChart**: Generación automática de gráficos HTML interactivos
-- **ATSPReader**: Lector de archivos ATSP
+- **EvolutionMetrics**: Seguimiento de métricas evolutivas
+- **EvolutionChart**: Generación automática de gráficos HTML interactivos para cada ejecución
+- **AllExecutionsEvolutionChart**: Generación de gráfico comparativo de todas las ejecuciones
+- **ATSPReader**: Lector de archivos ATSP en formato TSPLIB
+- **ExecutionResult**: Almacena los resultados obtenidos de una ejecución
+- **ExecutionConfig**: Almacena los valores de los parámetros y operadores seteados por el usuario
 
 ## Estructura del Proyecto
 
@@ -58,16 +62,23 @@ Este proyecto implementa un algoritmo genético completo con visualización web 
 │   ├── ElitismSurvivorMethod.java         # Supervivencia por elitismo
 │   └── SteadyStateSurvivorSelectionMethod.java # Supervivencia steady state
 ├── Util/
-│   ├── Asymmetric TSPs-Best knows solutions.pdf    # Mejores soluciones conocidas para distintas instancias del Problema del Viajante de Comercio
 │   ├── ATSPReader.java                    # Lector de archivos ATSP
 │   ├── EvolutionMetrics.java              # Seguimiento de métricas evolutivas
 │   ├── EvolutionChart.java                # Generador de gráficos HTML
+│   ├── AllExecutionsEvolutionChart.java   # Generador de gráfico comparativo de todas las ejecuciones
 │   ├── ExecutionLogger.java               # Sistema de logging de ejecuciones
 │   ├── ExecutionConfig.java               # Almacena parámetros de configuración para posterior creación del .json
 │   ├── ExecutionResult.java               # Almacena métricas resultantes de la ejecución para posterior creación del .json
+│   ├── Asymmetric TSPs - Best known solutions.pdf  # Mejores soluciones conocidas para instancias del Problema TSP
 │   ├── br17.atsp                          # Instancia de prueba (17 ciudades)
 │   └── p43.atsp                           # Instancia de prueba (43 ciudades)
 └── Tests/                                 # Directorio de pruebas
+    ├── configuración1/                    # Resultados de configuración 1
+    │   ├── ejecuciones.json               # Datos de todas las ejecuciones
+    │   └── evoluciones.html               # Gráficos comparativos
+    ├── configuración2/                    # Resultados de configuración 2
+    │   └── ...
+    └── ...
 ```
 
 ## Uso
@@ -109,29 +120,29 @@ El programa solicita interactivamente los siguientes parámetros:
    - `2` - Basado en arcos
 9. **Método de mutación**:
    - `1` - Inversión de subsecuencia
-   - `2` - Desplazamiento (shift)
 10. **Método de selección de supervivientes**:
     - `1` - Elitismo (con elite configurable)
     - `2` - Steady State (con reemplazo configurable)
+11. **Número de ejecuciones**: Cantidad de veces a ejecutar el algoritmo con la configuración proporcionada (ej: 5, 10, 30)
 
 ### Visualización de Resultados
 
-Al finalizar la ejecución, el programa genera automáticamente:
+Al finalizar todas las ejecuciones, el programa genera automáticamente:
 
-1. **`evolucion.html`**: Archivo HTML con gráficos interactivos que incluye:
-   - Gráfico de evolución del mejor fitness
-   - Gráfico de evolución de la diversidad poblacional
-  
-Para visualizar los gráficos, simplemente abre el archivo `evolucion.html` en tu navegador web.
-
-2. **`ejecucion.json`**: Archivo JSON con información de loggueo de la ejecución que incluye:
-   - Parámetros de configueración
+1. **`ejecuciones.json`**: Archivo JSON con información detallada de todas las ejecuciones que incluye:
+   - Parámetros de configuración
    - Métodos de selección de padres y de selección de supervivientes
    - Operadores de cruce y de mutación
-   - Evolución del fitness
-   - Mejor solución encontrada (orden de ciudades visitadas, su fitness y el costo total del camino)
+   - Evolución del fitness por cada ejecución
+   - Mejor solución encontrada en cada ejecución (orden de ciudades visitadas, su fitness y el costo total del camino)
+
+2. **`evoluciones.html`**: Archivo HTML con gráficos interactivos comparativos de todas las ejecuciones que incluye:
+   - Gráfico de evolución del mejor fitness de todas las ejecuciones
+   - Gráfico de evolución de la diversidad poblacional de todas las ejecuciones
   
-Ambos archivos se pueden encontrar en la carpeta **Tests/ejecucionX** con X el número de ejecuciones realizadas con anterioridad. Nota: En la primera ejecución se creará de forma automática la carpeta Tests con la carpeta ejecución1, que contendrá estos archivos
+Para visualizar los gráficos, simplemente abre el archivo `evoluciones.html` en tu navegador web.
+
+Ambos archivos se pueden encontrar en la carpeta **Tests/configuraciónX** con X el número de configuraciones ejecutadas con anterioridad. Nota: En la primera configuración se creará de forma automática la carpeta Tests con la carpeta configuración1, que contendrá estos archivos
 
 ## Métricas y Análisis
 
@@ -143,7 +154,7 @@ Ambos archivos se pueden encontrar en la carpeta **Tests/ejecucionX** con X el n
 
 ## Archivos de Prueba
 
-El proyecto incluye tres instancias de prueba de la literatura clásica en formato ATSP:
+El proyecto incluye dos instancias de prueba de la literatura clásica en formato ATSP:
 
 - **`br17.atsp`**: 17 ciudades
 - **`p43.atsp`**: 43 ciudades

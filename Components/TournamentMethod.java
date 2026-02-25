@@ -7,15 +7,16 @@ import java.util.Random;
 
 public class TournamentMethod implements FatherSelectionMethod{
     private final int tournamentSize;
+    private final Random random;
 
-    public TournamentMethod(int tournamentSize) {
+    public TournamentMethod(int tournamentSize, Random random) {
         this.tournamentSize = tournamentSize;
+        this.random = random;
     }
 
     @Override
     public Path selectFather(ArrayList<Path> population) {
         ArrayList<Path> solucionesElegidas = new ArrayList<>();
-        Random random = new Random();
 
         // Seleccionamos soluciones de la población, tantas como el tamaño del torneo  y de forma al azar
         for (int i = 0; i < tournamentSize; i++) {

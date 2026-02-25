@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import Model.Path;
 
 public class RouletteWheelMethod implements FatherSelectionMethod{
-    private Random random;
+    private final Random random;
 
-    public RouletteWheelMethod() {
-        this.random = new Random();
+    public RouletteWheelMethod(Random random) {
+        this.random = random;
     }
 
     @Override

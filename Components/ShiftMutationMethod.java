@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class ShiftMutationMethod implements MutationMethod {
-    private Random random;
+    private final Random random;
 
-    public ShiftMutationMethod() {
-        this.random = new Random();
+    public ShiftMutationMethod(Random random) {
+        this.random = random;
     }
 
     @Override
@@ -61,6 +61,9 @@ public class ShiftMutationMethod implements MutationMethod {
         }
 
         ciudades.addAll(destino, segmento);
+
+        // Recalcular el costo y fitness después de la mutación
+        sujeto.recalculate();
 
         return sujeto;
     }

@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class InvertMutationMethod implements MutationMethod {
-    private Random random;
+    private final Random random;
 
-    public InvertMutationMethod() {
-        this.random = new Random();
+    public InvertMutationMethod(Random random) {
+        this.random = random;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class InvertMutationMethod implements MutationMethod {
             posicion2 = temp;
         }
 
-        // Invertir el segmento entre posicion1 y posicion2 (inclusive)
+        // Invertir el segmento entre posicion1 y posicion2 (incluyéndolas)
         while (posicion1 < posicion2) {
             // Intercambiar elementos en posicion1 y posicion2
             Integer temp = ciudades.get(posicion1);
@@ -39,6 +39,9 @@ public class InvertMutationMethod implements MutationMethod {
             posicion1++;
             posicion2--;
         }
+
+        // Recalcular el costo y fitness después de la mutación
+        sujeto.recalculate();
 
         return sujeto;
     }

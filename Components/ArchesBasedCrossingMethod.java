@@ -6,15 +6,15 @@ import Model.Path;
 import java.util.*;
 
 public class ArchesBasedCrossingMethod implements CrossMethod {
-    private Random random;
+    private final Random random;
 
-    public ArchesBasedCrossingMethod() {
-        this.random = new Random();
+    public ArchesBasedCrossingMethod(Random random) {
+        this.random = random;
     }
 
     @Override
     //Cruce basado en arcos para una pareja. Debido que el algoritmo está pensado para generar un solo hijo,
-    // lo aplico dos veces intercambiando el rol de los padres
+    // se aplica dos veces intercambiando el rol de los padres
     public ArrayList<Path> crossCouple(Couple couple) {
         Path padre1 = couple.getPadre1();
         Path padre2 = couple.getPadre2();

@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -127,7 +126,6 @@ public class Main {
         String opcionSeleccion = scanner.nextLine();
         Integer tamanioTorneo = null;
 
-        FatherSelectionMethod selectionMethod;
         if (opcionSeleccion.equals("1")) {
             System.out.print("Tamaño del torneo (se sugiere valores entre 2 y 10): ");
             tamanioTorneo = Integer.parseInt(scanner.nextLine());
@@ -136,10 +134,7 @@ public class Main {
                 scanner.close();
                 return;
             }
-            selectionMethod = new TournamentMethod(tamanioTorneo);
-        } else if (opcionSeleccion.equals("2")) {
-            selectionMethod = new RouletteWheelMethod();
-        } else {
+        } else if (!opcionSeleccion.equals("2")) {
             System.err.println("Opción inválida. Saliendo.");
             scanner.close();
             return;
@@ -152,12 +147,7 @@ public class Main {
         System.out.print("Elija el método: 1) PMX (Partially Mapped Crossover) 2) Cruce Basado en Arcos (ingrese 1 o 2): ");
         String opcionCruce = scanner.nextLine();
 
-        CrossMethod crossMethod;
-        if (opcionCruce.equals("1")) {
-            crossMethod = new PMXCrossMethod();
-        } else if (opcionCruce.equals("2")) {
-            crossMethod = new ArchesBasedCrossingMethod();
-        } else {
+        if (!opcionCruce.equals("1") && !opcionCruce.equals("2")) {
             System.err.println("Opción inválida. Saliendo.");
             scanner.close();
             return;
@@ -169,12 +159,7 @@ public class Main {
         System.out.print("Elija el método: 1) Mutación por Inversión 2) Mutación por desplazamiento (ingrese 1 o 2): ");
         String opcionMutacion = scanner.nextLine();
 
-        MutationMethod mutationMethod;
-        if (opcionMutacion.equals("1")) {
-            mutationMethod = new InvertMutationMethod();
-        } else if (opcionMutacion.equals("2")) {
-            mutationMethod = new ShiftMutationMethod();
-        } else {
+        if (!opcionMutacion.equals("1") && !opcionMutacion.equals("2")) {
             System.err.println("Opción inválida. Saliendo.");
             scanner.close();
             return;
@@ -189,25 +174,22 @@ public class Main {
         Integer numReemplazoSteadyState = null;
         Integer elite = null;
 
-        SurvivorsSelectionMethod survivorMethod;
         if (opcionSobrevientes.equals("1")) {
-            System.out.println("Seleccione el valor de n (cantidad de individuos de la anterior generación a ser reemplazados en la siguiente): ");
+            System.out.print("Seleccione el valor de n (cantidad de individuos de la anterior generación a ser reemplazados en la siguiente): ");
             numReemplazoSteadyState = Integer.parseInt(scanner.nextLine());
             if (numReemplazoSteadyState >= N || numReemplazoSteadyState <= 0) {
                 System.out.println("El valor a reemplazar debe ser menor al tamaño de la población y mayor a 0");
                 scanner.close();
                 return;
             }
-            survivorMethod = new SteadyStateSurvivorSelectionMethod(numReemplazoSteadyState);
         } else if (opcionSobrevientes.equals("2")) {
-            System.out.println("Seleccione el valor de k (cantidad de mejores individuos de la generación a preservar en la siguiente): ");
+            System.out.print("Seleccione el valor de k (cantidad de mejores individuos de la generación a preservar en la siguiente): ");
             elite = Integer.parseInt(scanner.nextLine());
             if (elite < 0 || elite > N) {
                 System.out.println("El valor ingresado no es válido. Debe ser superior o igual a 0 y menor al tamaño de la población");
                 scanner.close();
                 return;
             }
-            survivorMethod = new ElitismSurvivorMethod(elite);
         } else {
             System.err.println("Opción inválida. Saliendo.");
             scanner.close();
@@ -215,12 +197,28 @@ public class Main {
         }
 
         System.out.println("Guardando configuración..");
-        //Guardado de la configuración
-        ExecutionConfig configuracion = new ExecutionConfig(fileName, N, G, C, mutProb, crossProb, selectionMethod.getName(),
-                crossMethod.getName(), mutationMethod.getName(), survivorMethod.getName(), porcentajeNN, tamanioTorneo,
-                numReemplazoSteadyState, elite);
 
-        ExecutionLogger logger = new ExecutionLogger();
+        // ========== NRO DE EJECUCIONES DEL ALGORITMO =======
+        System.out.println("  ");
+        System.out.print("Eliga la cantidad de ejecuciones a realizar con la configuración proporcionada: ");
+        Integer ejecuciones = null;
+        try {
+            ejecuciones = Integer.parseInt(scanner.nextLine());
+            if (ejecuciones <= 0){
+                System.out.println("Error: debe elegir un valor mayor a cero");
+                scanner.close();
+                return;
+            }
+        } catch(NumberFormatException e) {
+            System.err.println("Error: Debe ingresar un número válido.");
+            scanner.close();
+            return;
+        }
+
+        // ========== GENERAR SEMILLAS ALEATORIAS REPRODUCIBLES ==========
+        // Usar una semilla fija para generar siempre la misma secuencia de semillas y poder comparar las ejecuciones
+        // entre las diferentes configuraciones
+        long[] semillas = generarSemillas(ejecuciones, 42L);
 
 
         // ========== EJECUCIÓN DEL ALGORITMO ==========
@@ -230,93 +228,141 @@ public class Main {
         System.out.println("========================================");
         System.out.println();
 
-        // Inicializar población
-        Population p = Population.createMixedPopulation(N, C, costs, mutProb, crossProb, G, porcentajeNN);
+        // Lista para almacenar los resultados de todas las ejecuciones
+        ArrayList<ExecutionResult> todosLosResultados = new ArrayList<>();
 
-        System.out.println("--- POBLACIÓN INICIAL ---");
-        p.printPaths();
-        System.out.println("Mejor camino inicial: " + p.getBestPath());
-        System.out.println();
+        ExecutionLogger logger = new ExecutionLogger();
+        ExecutionConfig configuracion = null;
 
-        // Crear instancia de métricas
-        EvolutionMetrics metricas = new EvolutionMetrics();
-        Random random = new Random();
-        metricas.startTracking();
+        // Bucle de ejecuciones
+        for (int numEjecucion = 1; numEjecucion <= ejecuciones; numEjecucion++) {
+            System.out.println("--- EJECUCIÓN " + numEjecucion + " DE " + ejecuciones + " ---");
 
-        // Bucle de generaciones
-        for (int generacion = 0; generacion < G; generacion++) {
-            ArrayList<Path> generatedPaths = p.getPaths();
+            // Crear Random con semilla fija para esta ejecución (reproducibilidad)
+            Random random = new Random(semillas[numEjecucion - 1]);
 
-            // 1. Seleccionar padres y formar parejas
-            ArrayList<Couple> parejas = generateCouple(generatedPaths, N, selectionMethod);
-
-            // 2. Generar hijos con cruce y mutación
-            ArrayList<Path> nuevaGeneracion = new ArrayList<>();
-
-            for (Couple pareja : parejas) {
-                ArrayList<Path> hijos;
-
-                // Decidir si aplicar cruce
-                if (random.nextDouble() < crossProb) {
-                    hijos = crossMethod.crossCouple(pareja);
-                } else {
-                    // Sin cruce, hijos clones de los padres
-                    Path hijo1 = new Path(pareja.getPadre1().getCities(), pareja.getPadre1().getCosts());
-                    Path hijo2 = new Path(pareja.getPadre2().getCities(), pareja.getPadre2().getCosts());
-                    hijos = new ArrayList<>();
-                    hijos.add(hijo1);
-                    hijos.add(hijo2);
-                }
-
-                // Decidir si aplicar mutación a cada hijo
-                for (Path hijo : hijos) {
-                    if (random.nextDouble() < mutProb) {
-                        mutationMethod.mutate(hijo);
-                    }
-                }
-
-                nuevaGeneracion.addAll(hijos);
+            // Crear los componentes del algoritmo genético con el Random de esta ejecución
+            FatherSelectionMethod selectionMethod;
+            if (opcionSeleccion.equals("1")) {
+                selectionMethod = new TournamentMethod(tamanioTorneo, random);
+            } else {
+                selectionMethod = new RouletteWheelMethod(random);
             }
 
-            // 3. Reemplazar población y armar la población para la nueva generación
-            nuevaGeneracion = survivorMethod.selectSurvivors(p.getPaths(), nuevaGeneracion);
-            p.setPaths(nuevaGeneracion);
+            CrossMethod crossMethod;
+            if (opcionCruce.equals("1")) {
+                crossMethod = new PMXCrossMethod(random);
+            } else {
+                crossMethod = new ArchesBasedCrossingMethod(random);
+            }
 
-            // 4. Registrar métricas de evolución
-            metricas.recordGeneration(generacion, p);
+            MutationMethod mutationMethod;
+            if (opcionMutacion.equals("1")) {
+                mutationMethod = new InvertMutationMethod(random);
+            } else {
+                mutationMethod = new ShiftMutationMethod(random);
+            }
 
+            SurvivorsSelectionMethod survivorMethod;
+            if (opcionSobrevientes.equals("1")) {
+                survivorMethod = new SteadyStateSurvivorSelectionMethod(numReemplazoSteadyState);
+            } else {
+                survivorMethod = new ElitismSurvivorMethod(elite);
+            }
+
+            // Guardar configuración solo una vez (primera ejecución)
+            if (numEjecucion == 1) {
+                configuracion = new ExecutionConfig(fileName, N, G, C, mutProb, crossProb, selectionMethod.getName(),
+                        crossMethod.getName(), mutationMethod.getName(), survivorMethod.getName(), porcentajeNN, tamanioTorneo,
+                        numReemplazoSteadyState, elite);
+            }
+
+            // Inicializar población usando el Random con semilla
+            Population p = Population.createMixedPopulation(N, C, costs, mutProb, crossProb, G, porcentajeNN, random);
+
+            // Crear instancia de métricas
+            EvolutionMetrics metricas = new EvolutionMetrics();
+            metricas.startTracking();
+
+            // Bucle de generaciones
+            for (int generacion = 0; generacion < G; generacion++) {
+                ArrayList<Path> generatedPaths = p.getPaths();
+
+                // 1. Seleccionar padres y formar parejas
+                ArrayList<Couple> parejas = generateCouple(generatedPaths, N, selectionMethod);
+
+                // 2. Generar hijos con cruce y mutación
+                ArrayList<Path> nuevaGeneracion = new ArrayList<>();
+
+                for (Couple pareja : parejas) {
+                    ArrayList<Path> hijos;
+
+                    // Decidir si aplicar cruce
+                    if (random.nextDouble() < crossProb) {
+                        hijos = crossMethod.crossCouple(pareja);
+                    } else {
+                        // Sin cruce, hijos clones de los padres
+                        Path hijo1 = new Path(pareja.getPadre1().getCities(), pareja.getPadre1().getCosts());
+                        Path hijo2 = new Path(pareja.getPadre2().getCities(), pareja.getPadre2().getCosts());
+                        hijos = new ArrayList<>();
+                        hijos.add(hijo1);
+                        hijos.add(hijo2);
+                    }
+
+                    // Decidir si aplicar mutación a cada hijo
+                    for (Path hijo : hijos) {
+                        if (random.nextDouble() < mutProb) {
+                            mutationMethod.mutate(hijo);
+                        }
+                    }
+
+                    nuevaGeneracion.addAll(hijos);
+                }
+
+                // 3. Reemplazar población y armar la población para la nueva generación
+                nuevaGeneracion = survivorMethod.selectSurvivors(p.getPaths(), nuevaGeneracion);
+                p.setPaths(nuevaGeneracion);
+
+                // 4. Registrar métricas de evolución
+                metricas.recordGeneration(generacion, p);
+
+            }
+
+            metricas.stopTracking(System.currentTimeMillis());
+
+            System.out.println("Ejecución " + numEjecucion + " completada - Mejor costo: " + p.getBestPath().getPathCost());
+
+            ExecutionResult resultadosEjecucion = new ExecutionResult(metricas.getFinalBestFitness(), p.getBestPath().getPathCost(),
+                    metricas.getTiempoEjecucion(), metricas.getBestFitnessList(), metricas.getDiversityList(), p.getBestPath().getCities());
+
+            todosLosResultados.add(resultadosEjecucion);
         }
-
-        metricas.stopTracking(System.currentTimeMillis());
-
-        System.out.println("Guardando resultados de la ejecución...");
-        ExecutionResult resultadosEjecucion = new ExecutionResult(metricas.getFinalBestFitness(), p.getBestPath().getPathCost(),
-                metricas.getTiempoEjecucion(), metricas.getBestFitnessList(), p.getBestPath().getCities());
 
 
 
         System.out.println();
         System.out.println("========================================");
-        System.out.println("RESULTADO FINAL");
+        System.out.println("RESULTADOS FINALES - " + ejecuciones + " EJECUCIONES COMPLETADAS");
+        System.out.println("========================================");
 
         try {
             // Crear carpeta para la ejecución
             File carpetaEjecucion = createExecutionFolder();
             System.out.println("Resultados almacenados en la carpeta: " + carpetaEjecucion.getPath());
 
-            // Guardar en JSON
-            String json = logger.toJson(configuracion, resultadosEjecucion);
+            // Guardar en JSON con todas las ejecuciones
+            String json = logger.toJson(configuracion, todosLosResultados);
 
-            File jsonFile = new File(carpetaEjecucion, "ejecucion.json");
+            File jsonFile = new File(carpetaEjecucion, "ejecuciones.json");
             logger.saveJsonToFile(jsonFile.getPath(), json);
 
-            // Generar HTML con las estadísticas de la ejecución
-            File htmlFile = new File(carpetaEjecucion, "evolucion.html");
-            EvolutionChart.generateHTML(metricas, htmlFile.getPath(), new File(filePath).getName());
+            // Generar HTML con todas las evoluciones (fitness y diversidad) de cada ejecución
+            File htmlEvoluciones = new File(carpetaEjecucion, "evoluciones.html");
+            AllExecutionsEvolutionChart.generateHTML(todosLosResultados, htmlEvoluciones.getPath(), new File(filePath).getName());
 
             System.out.println("Reporte generado en: " + carpetaEjecucion.getPath());
-            System.out.println("  - " + jsonFile.getName());
-            System.out.println("  - " + htmlFile.getName());
+            System.out.println("  - " + jsonFile.getName() + " (datos de " + ejecuciones + " ejecuciones)");
+            System.out.println("  - " + htmlEvoluciones.getName() + " (gráficos de fitness y diversidad de todas las ejecuciones)");
         } catch (IOException e) {
             System.err.println("Error al generar reporte de los resultados: " + e.getMessage());
         }
@@ -324,14 +370,21 @@ public class Main {
         scanner.close();
     }
 
+    // Genera N/2 parejas de padres utilizando el método de selección especificado
     private static ArrayList<Couple> generateCouple(ArrayList<Path> generatedPaths, int N, FatherSelectionMethod strategy) {
         ArrayList<Couple> parejas = new ArrayList<>();
         for (int i = 0; i < N / 2; i++) {
             Path padre1 = strategy.selectFather(generatedPaths);
             Path padre2 = strategy.selectFather(generatedPaths);
-            while (padre1.equals(padre2)) {
+
+            // Intentar encontrar un padre diferente,  límite de intentos para evitar bucles infinitos cuando la población converge
+            int intentos = 0;
+            int maxIntentos = 50;
+            while (padre1.equals(padre2) && intentos < maxIntentos) {
                 padre2 = strategy.selectFather(generatedPaths);
+                intentos++;
             }
+
             Couple parejaGenerada = new Couple(padre1, padre2);
             parejas.add(parejaGenerada);
         }
@@ -350,7 +403,7 @@ public class Main {
 
         // Buscar el siguiente número de ejecución disponible
         do {
-            carpetaEjecucion = new File(testsDir, "ejecucion" + numeroEjecucion);
+            carpetaEjecucion = new File(testsDir, "configuración" + numeroEjecucion);
             numeroEjecucion++;
         } while (carpetaEjecucion.exists());
 
@@ -360,68 +413,18 @@ public class Main {
         return carpetaEjecucion;
     }
 
-    // Busca la/s ejecucion/es que produjeron el menor costo
-    private static void searchBestExecution() {
-        File testsDir = new File("Tests");
-        if (!testsDir.exists() || !testsDir.isDirectory()) {
-            System.out.println("No se encontró la carpeta Tests");
-            return;
+    //Genera un arreglo con semillas de generación
+    private static long[] generarSemillas(int cantidad, long semillaInicial) {
+        Random generador = new Random(semillaInicial);
+        long[] semillas = new long[cantidad];
+
+        for (int i = 0; i < cantidad; i++) {
+            semillas[i] = generador.nextLong();
         }
 
-        File[] ejecuciones = testsDir.listFiles(File::isDirectory);
-        if (ejecuciones == null || ejecuciones.length == 0) {
-            System.out.println("No hay ejecuciones registradas en la carpeta Tests");
-            return;
-        }
-
-        ArrayList<String> mejoresEjecuciones = new ArrayList<>();
-        double mejorCosto = Double.MAX_VALUE;
-
-        for (File carpeta : ejecuciones) {
-            File jsonFile = new File(carpeta, "ejecucion.json");
-            if (jsonFile.exists()) {
-                try {
-                    Scanner fileScanner = new Scanner(jsonFile);
-                    StringBuilder jsonContent = new StringBuilder();
-                    while (fileScanner.hasNextLine()) {
-                        jsonContent.append(fileScanner.nextLine());
-                    }
-                    fileScanner.close();
-
-                    // Buscar el costo final en el JSON
-                    String json = jsonContent.toString();
-                    String buscar = "\"costoMejorSolucion\":";
-                    int inicio = json.indexOf(buscar);
-                    if (inicio != -1) {
-                        inicio += buscar.length();
-                        int fin = json.indexOf(",", inicio);
-                        if (fin == -1) fin = json.indexOf("}", inicio);
-                        String costoStr = json.substring(inicio, fin).trim();
-                        double costo = Double.parseDouble(costoStr);
-
-                        if (costo < mejorCosto) {
-                            mejorCosto = costo;
-                            mejoresEjecuciones.clear();
-                            mejoresEjecuciones.add(carpeta.getName());
-                        } else if (costo == mejorCosto) {
-                            mejoresEjecuciones.add(carpeta.getName());
-                        }
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error al leer " + jsonFile.getPath() + ": " + e.getMessage());
-                }
-            }
-        }
-
-        if (!mejoresEjecuciones.isEmpty()) {
-            if (mejoresEjecuciones.size() == 1) {
-                System.out.println("Mejor ejecución: " + mejoresEjecuciones.getFirst() + " con costo final: " + mejorCosto);
-            } else {
-                System.out.println("Mejores ejecuciones (igual costo): " + String.join(", ", mejoresEjecuciones) + " con costo final: " + mejorCosto);
-            }
-        } else {
-            System.out.println("No se pudo determinar la mejor ejecución");
-        }
+        return semillas;
     }
 
 }
+
+

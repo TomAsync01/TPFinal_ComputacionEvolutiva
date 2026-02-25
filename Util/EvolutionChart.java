@@ -6,70 +6,43 @@ import java.util.List;
 
 public class EvolutionChart {
 
-    // Genera un archivo HTML con gráficos que muestran la evolución del algoritmo genético
-    public static void generateHTML(EvolutionMetrics metrics, String filename, String problemName) throws IOException {
-        StringBuilder html = new StringBuilder();
-
-        html.append("<!DOCTYPE html>\n<html>\n<head>\n");
-        html.append("    <meta charset='UTF-8'>\n");
-        html.append("    <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>\n");
-        html.append("    <title>Evolución AG - ").append(problemName).append("</title>\n");
-        html.append("    <style>\n");
-        html.append("        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }\n");
-        html.append("        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }\n");
-        html.append("        h1 { color: #333; text-align: center; margin-bottom: 30px; }\n");
-        html.append("        .chart-container { position: relative; height: 500px; margin-bottom: 40px; }\n");
-        html.append("        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }\n");
-        html.append("        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 8px; color: white; }\n");
-        html.append("        .stat-label { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }\n");
-        html.append("        .stat-value { font-size: 24px; font-weight: bold; }\n");
-        html.append("        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }\n");
-        html.append("        .chart-container { animation: fadeIn 0.6s ease-out; }\n");
-        html.append("        .stat-card { animation: fadeIn 0.6s ease-out; transition: transform 0.3s; }\n");
-        html.append("        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.2); }\n");
-        html.append("    </style>\n");
-        html.append("</head>\n<body>\n");
-        html.append("<div class='container'>\n");
-        html.append("    <h1>Evolución del Algoritmo Genético - ").append(problemName).append("</h1>\n");
-
-        // Gráfico de Mejor Fitness
-        html.append("    <div class='chart-container'>\n");
-        html.append("        <canvas id='fitnessChart'></canvas>\n");
-        html.append("    </div>\n");
-
-        // Gráfico de Diversidad
-        html.append("    <div class='chart-container'>\n");
-        html.append("        <canvas id='diversityChart'></canvas>\n");
-        html.append("    </div>\n");
-
-        html.append("</div>\n");
-        html.append("<script>\n");
-        html.append(generateChartScript(metrics));
-        html.append("</script>\n");
-        html.append("</body>\n</html>");
-
-        try (FileWriter writer = new FileWriter(filename)) {
-            writer.write(html.toString());
-        }
+    // Establece los estilos de los gráficos y los devuelve
+    protected static String getStyles() {
+        StringBuilder styles = new StringBuilder();
+        styles.append("    <style>\n");
+        styles.append("        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }\n");
+        styles.append("        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }\n");
+        styles.append("        h1 { color: #333; text-align: center; margin-bottom: 30px; }\n");
+        styles.append("        .chart-container { position: relative; height: 500px; margin-bottom: 40px; }\n");
+        styles.append("        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }\n");
+        styles.append("        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 8px; color: white; }\n");
+        styles.append("        .stat-label { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }\n");
+        styles.append("        .stat-value { font-size: 24px; font-weight: bold; }\n");
+        styles.append("        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }\n");
+        styles.append("        .chart-container { animation: fadeIn 0.6s ease-out; }\n");
+        styles.append("        .stat-card { animation: fadeIn 0.6s ease-out; transition: transform 0.3s; }\n");
+        styles.append("        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.2); }\n");
+        styles.append("    </style>\n");
+        return styles.toString();
     }
 
-    // Genera el script para los gráficos de evolución del fitness y de la diversidad de la población
-    private static String generateChartScript(EvolutionMetrics metrics) {
+    // Genera el script para los gráficos de cada una de las ejecuciones
+    public static String generateChartScript(EvolutionMetrics metrics, String idSuffix) {
         StringBuilder script = new StringBuilder();
 
-        script.append("const generations = ").append(metrics.getGenerationList()).append(";\n");
-        script.append("const bestFitness = ").append(formatList(metrics.getBestFitnessList())).append(";\n");
-        script.append("const diversity = ").append(formatList(metrics.getDiversityList())).append(";\n\n");
+        script.append("const generations").append(idSuffix).append(" = ").append(metrics.getGenerationList()).append(";\n");
+        script.append("const bestFitness").append(idSuffix).append(" = ").append(formatList(metrics.getBestFitnessList())).append(";\n");
+        script.append("const diversity").append(idSuffix).append(" = ").append(formatList(metrics.getDiversityList())).append(";\n\n");
 
         // Gráfico de Mejor Fitness
-        script.append("new Chart(document.getElementById('fitnessChart'), {\n");
+        script.append("new Chart(document.getElementById('fitnessChart").append(idSuffix).append("'), {\n");
         script.append("    type: 'line',\n");
         script.append("    data: {\n");
-        script.append("        labels: generations,\n");
+        script.append("        labels: generations").append(idSuffix).append(",\n");
         script.append("        datasets: [\n");
         script.append("            {\n");
         script.append("                label: 'Mejor Fitness',\n");
-        script.append("                data: bestFitness,\n");
+        script.append("                data: bestFitness").append(idSuffix).append(",\n");
         script.append("                borderColor: 'rgb(75, 192, 192)',\n");
         script.append("                backgroundColor: 'rgba(75, 192, 192, 0.2)',\n");
         script.append("                borderWidth: 3,\n");
@@ -115,16 +88,16 @@ public class EvolutionChart {
         script.append("});\n\n");
 
         // Gráfico de Diversidad
-        script.append("const avgDiversity = ").append(metrics.getAverageDiversity()).append(";\n");
-        script.append("const avgLine = Array(diversity.length).fill(avgDiversity);\n\n");
-        script.append("new Chart(document.getElementById('diversityChart'), {\n");
+        script.append("const avgDiversity").append(idSuffix).append(" = ").append(metrics.getAverageDiversity()).append(";\n");
+        script.append("const avgLine").append(idSuffix).append(" = Array(diversity").append(idSuffix).append(".length).fill(avgDiversity").append(idSuffix).append(");\n\n");
+        script.append("new Chart(document.getElementById('diversityChart").append(idSuffix).append("'), {\n");
         script.append("    type: 'line',\n");
         script.append("    data: {\n");
-        script.append("        labels: generations,\n");
+        script.append("        labels: generations").append(idSuffix).append(",\n");
         script.append("        datasets: [\n");
         script.append("            {\n");
         script.append("                label: 'Diversidad',\n");
-        script.append("                data: diversity,\n");
+        script.append("                data: diversity").append(idSuffix).append(",\n");
         script.append("                borderColor: 'rgb(153, 102, 255)',\n");
         script.append("                backgroundColor: 'rgba(153, 102, 255, 0.1)',\n");
         script.append("                borderWidth: 2,\n");
@@ -134,7 +107,7 @@ public class EvolutionChart {
         script.append("            },\n");
         script.append("            {\n");
         script.append("                label: 'Promedio',\n");
-        script.append("                data: avgLine,\n");
+        script.append("                data: avgLine").append(idSuffix).append(",\n");
         script.append("                borderColor: 'rgba(255, 99, 132, 0.8)',\n");
         script.append("                borderWidth: 2,\n");
         script.append("                borderDash: [5, 5],\n");
@@ -172,7 +145,7 @@ public class EvolutionChart {
         return script.toString();
     }
 
-    //Formetea una lista para usarla en JS
+    //Formetea una lista a string para usarla en JS
     private static String formatList(List<?> list) {
         return list.toString();
     }

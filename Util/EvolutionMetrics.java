@@ -48,7 +48,7 @@ public class EvolutionMetrics {
         return comparisons > 0 ? sumDistances / comparisons : 0.0;
     }
 
-    // Calcula la diversidad promedio de todas la s generaciones
+    // Calcula la diversidad promedio de todas las generaciones
     public double getAverageDiversity() {
         if (diversityList.isEmpty()) {
             return 0.0;
@@ -91,4 +91,20 @@ public class EvolutionMetrics {
     public List<Double> getDiversityList() { return new ArrayList<Double>(diversityList); }
     public List<Integer> getGenerationList() { return new ArrayList<Integer>(generationList); }
     public long getTiempoEjecucion(){return tiempoEjecucion;}
+
+    // Método para cargar datos de fitness desde una lista externa
+    public void loadFitnessData(List<Double> fitnessData) {
+        bestFitnessList.clear();
+        bestFitnessList.addAll(fitnessData);
+        generationList.clear();
+        for (int i = 0; i < fitnessData.size(); i++) {
+            generationList.add(i);
+        }
+    }
+
+    // Método para cargar datos de diversidad desde una lista externa
+    public void loadDiversityData(List<Double> diversityData) {
+        diversityList.clear();
+        diversityList.addAll(diversityData);
+    }
 }

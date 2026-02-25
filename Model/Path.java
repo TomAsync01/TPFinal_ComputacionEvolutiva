@@ -11,6 +11,7 @@ public class Path {
     private final Random random = new Random();
     private final int[][] costs;
 
+
     // Camino generado de forma aleatoria
     public Path(int numberOfCities, int[][] costs) {
         if (numberOfCities <= 0) {
@@ -88,6 +89,12 @@ public class Path {
         this.fitness = (double) 1 /pathCost;
     }
 
+    // Método público para recalcular costo y fitness luego de una mutación
+    public void recalculate() {
+        calculateCost();
+        calculateFitness();
+    }
+
     // Crea un camino usando el método del vecino más cercano
     public static Path createNearestNeighborPath(int startCityIndex0, int[][] costs) {
         int n = costs.length;
@@ -117,6 +124,31 @@ public class Path {
         p.cities.addAll(tour);
         p.calculateCost();
         return p;
+    }
+
+    // Crea un camino aleatorio usando usando un valor de Random especificado
+    public static Path createRandomPath(int numberOfCities, int[][] costs, Random random) {
+        if (numberOfCities <= 0) {
+            throw new IllegalArgumentException("La cantidad de ciudades debe ser mayor a 0");
+        }
+        if (costs == null || costs.length != numberOfCities) {
+            throw new IllegalArgumentException("La matriz de costos debe ser cuadrada");
+        }
+
+        ArrayList<Integer> cities = new ArrayList<>(numberOfCities);
+        for (int i = 1; i <= numberOfCities; i++) {
+            cities.add(i);
+        }
+
+        // Shuffle usando el Random proporcionado (con semilla)
+        for (int i = cities.size() - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            int tmp = cities.get(i);
+            cities.set(i, cities.get(j));
+            cities.set(j, tmp);
+        }
+
+        return new Path(cities, costs);
     }
 
     public int getPathCost() {

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class ExecutionLogger {
 
-    public String toJson(ExecutionConfig configuracion, ExecutionResult resultadosEjecucion) {
+    public String toJson(ExecutionConfig configuracion, List<ExecutionResult> resultadosEjecuciones) {
 
         StringBuilder json = new StringBuilder();
         json.append("{\n");
@@ -57,34 +57,70 @@ public class ExecutionLogger {
 
         json.append("  },\n");
 
-        List<Double> fitnessEvolution = resultadosEjecucion.getFitnessEvolution();
-        List<Integer> bestSolution = resultadosEjecucion.getBestSolution();
+        // Array de ejecuciones
+        json.append("  \"ejecuciones\": [\n");
 
-        // Evolución del mejro fitness para cada generación
-        json.append("  \"evolucionFitness\": [");
-        for (int i = 0; i < fitnessEvolution.size(); i++) {
-            json.append("\n    {\"generacion\": ").append(i)
-                    .append(", \"fitness\": ").append(fitnessEvolution.get(i)).append("}");
-            if (i < fitnessEvolution.size() - 1) json.append(",");
+        for (int e = 0; e < resultadosEjecuciones.size(); e++) {
+            ExecutionResult resultadosEjecucion = resultadosEjecuciones.get(e);
+
+            json.append("    {\n");
+            json.append("      \"numeroEjecucion\": ").append(e + 1).append(",\n");
+
+            List<Double> fitnessEvolution = resultadosEjecucion.getFitnessEvolution();
+            List<Double> diversityEvolution = resultadosEjecucion.getDiversityEvolution();
+            List<Integer> bestSolution = resultadosEjecucion.getBestSolution();
+
+            // Evolución del mejor fitness para cada generación
+            json.append("      \"evolucionFitness\": [");
+            for (int i = 0; i < fitnessEvolution.size(); i++) {
+                json.append("\n        {\"generacion\": ").append(i)
+                        .append(", \"fitness\": ").append(fitnessEvolution.get(i)).append("}");
+                if (i < fitnessEvolution.size() - 1) json.append(",");
+            }
+            json.append("\n      ],\n");
+
+            // Evolución de la diversidad para cada generación
+            json.append("      \"evolucionDiversidad\": [");
+            for (int i = 0; i < diversityEvolution.size(); i++) {
+                json.append("\n        {\"generacion\": ").append(i)
+                        .append(", \"diversidad\": ").append(diversityEvolution.get(i)).append("}");
+                if (i < diversityEvolution.size() - 1) json.append(",");
+            }
+            json.append("\n      ],\n");
+
+            // Mejor solución
+            json.append("      \"mejorSolucion\": [");
+            for (int i = 0; i < bestSolution.size(); i++) {
+                json.append(bestSolution.get(i));
+                if (i < bestSolution.size() - 1) json.append(", ");
+            }
+            json.append("],\n");
+
+            // Fitness de la mejor solución
+            json.append("      \"fitnessMejorSolucion\": ").append(resultadosEjecucion.getFinalBestFitness()).append(",\n");
+
+            //Costo de la mejor solución
+            json.append("      \"costoMejorSolucion\": ").append(resultadosEjecucion.getBestCost()).append(",\n");
+
+            // Tiempo requerido de ejecución
+            json.append("      \"tiempoEjecucionMs\": ").append(resultadosEjecucion.getExecutionTime()).append("\n");
+
+            json.append("    }");
+            if (e < resultadosEjecuciones.size() - 1) json.append(",");
+            json.append("\n");
         }
-        json.append("\n  ],\n");
 
-        // Mejor solución
-        json.append("  \"mejorSolucion\": [");
-        for (int i = 0; i < bestSolution.size(); i++) {
-            json.append(bestSolution.get(i));
-            if (i < bestSolution.size() - 1) json.append(", ");
-        }
-        json.append("],\n");
+        json.append("  ],\n");
 
-        // Fitness de la mejor solución
-        json.append("  \"fitnessMejorSolucion\": ").append(resultadosEjecucion.getFinalBestFitness()).append(",\n");
-
-        //Costo de la mejor solución
-        json.append("  \"costoMejorSolucion\": ").append(resultadosEjecucion.getBestCost()).append(",\n");
-
-        // Tiempo requerido de ejecución
-        json.append("  \"tiempoEjecucionMs\": ").append(resultadosEjecucion.getExecutionTime()).append("\n");
+        // Estadísticas globales
+        json.append("  \"estadisticasGlobales\": {\n");
+        json.append("    \"promedioFitness\": ").append(ExecutionResult.calcularPromedioFitness(resultadosEjecuciones)).append(",\n");
+        json.append("    \"desviacionEstandarFitness\": ").append(ExecutionResult.calcularDesviacionEstandarFitness(resultadosEjecuciones)).append(",\n");
+        json.append("    \"promedioCosto\": ").append(ExecutionResult.calcularPromedioCosto(resultadosEjecuciones)).append(",\n");
+        json.append("    \"desviacionEstandarCosto\": ").append(ExecutionResult.calcularDesviacionEstandarCosto(resultadosEjecuciones)).append(",\n");
+        json.append("    \"promedioTiempoMs\": ").append(ExecutionResult.calcularPromedioTiempo(resultadosEjecuciones)).append(",\n");
+        json.append("    \"desviacionEstandarTiempoMs\": ").append(ExecutionResult.calcularDesviacionEstandarTiempo(resultadosEjecuciones)).append("\n");
+        json.append("  }\n");
 
         json.append("}");
 
