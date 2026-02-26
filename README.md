@@ -83,22 +83,53 @@ Este proyecto implementa un algoritmo genético completo con visualización web 
 
 ## Uso
 
+### Clonar el Proyecto
+
+Primero, clona el repositorio en tu máquina local:
+
+```bash
+git clone https://github.com/tu-usuario/TPFinal_ComputacionEvolutiva.git
+cd TPFinal_ComputacionEvolutiva
+```
+
 ### Compilación y Ejecución desde consola
 
-#### Linux / macOS / Windows
+#### Linux / macOS
 1. Abrir una terminal.
-2. Posicionarse en el directorio raíz del proyecto:
-   ```bash (powershell en Windows)
+2. Posicionarse en el directorio raíz del proyecto (si no lo estás ya):
+   ```bash
    cd ruta/al/proyecto
+   ```
 3. Compilar el programa:
-   ```bash (powershell en Windows)
-   javac Main.java
+   ```bash
+   javac Model/*.java Components/*.java Util/*.java Main.java
+   ```
 4. Ejecutar la aplicación:
-   ```bash (powershell en Windows)
+   ```bash
    java Main
+   ```
+
+#### Windows (PowerShell)
+1. Abrir PowerShell.
+2. Posicionarse en el directorio raíz del proyecto (si no lo estás ya):
+   ```powershell
+   cd ruta\al\proyecto
+   ```
+3. Compilar el programa:
+   ```powershell
+   javac Model\*.java Components\*.java Util\*.java Main.java
+   ```
+4. Ejecutar la aplicación:
+   ```powershell
+   java Main
+   ```
 
 ### Compilación y Ejecución desde un IDE
- Se puede ejecutar directamente desde un IDE con soporte para Java. Se recomienda usar [Intellij IDEA][https://www.jetbrains.com/es-es/idea/] o [Eclipse][https://eclipseide.org/]
+Se puede ejecutar directamente desde un IDE con soporte para Java. Se recomienda usar [IntelliJ IDEA](https://www.jetbrains.com/es-es/idea/) o [Eclipse](https://eclipseide.org/):
+
+1. Abre el IDE de tu preferencia
+2. Importa o abre el proyecto desde la carpeta clonada
+3. Ejecuta el archivo `Main.java`
 
 ### Parámetros de Entrada
 

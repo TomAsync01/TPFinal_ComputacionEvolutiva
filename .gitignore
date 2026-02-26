@@ -1,37 +1,39 @@
-# Compilados Java
+# Archivos compilados de Java
 *.class
+
+# Directorios de compilación
+out/
+bin/
+target/
+
+# Archivos de paquetes
 *.jar
 *.war
+*.nar
 *.ear
-
-# Salidas de compilación habituales
-/bin/
-/out/
-/build/
-/target/
-
-# IntelliJ IDEA
-/.idea/
-/*.iml
-*.iws
-*.ipr
-
-# Archivos de sistema (Windows)
-Thumbs.db
-Desktop.ini
-
-# OneDrive (por si se generan cachés/temporales)
-~$*
-*.lnk
+*.zip
+*.tar.gz
+*.rar
 
 # Logs
 *.log
 
-# Archivos temporales
-*.tmp
-*.temp
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+
+# Configuración de IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
 *.swp
 *.swo
+*~
 
-# MacOS (por si abres el proyecto allí)
-.DS_Store
+# Archivos específicos de IntelliJ IDEA
+*.iws
+*.ipr
+
