@@ -50,7 +50,7 @@ public class ArchesBasedCrossingMethod implements CrossMethod {
             tabla.put(ciudad, new HashSet<>());
         }
 
-        // Agregar arcos de genesPadre (considerando camino cíclico)
+        // Agregar arcos de genesPadre
         for (int i = 0; i < n; i++) {
             int actual = genesPadre.get(i);
             int siguiente = genesPadre.get((i + 1) % n);
@@ -60,7 +60,7 @@ public class ArchesBasedCrossingMethod implements CrossMethod {
             tabla.get(actual).add(anterior);
         }
 
-        // Agregar arcos de genesMadre (considerando camino cíclico)
+        // Agregar arcos de genesMadre
         for (int i = 0; i < n; i++) {
             int actual = genesMadre.get(i);
             int siguiente = genesMadre.get((i + 1) % n);
