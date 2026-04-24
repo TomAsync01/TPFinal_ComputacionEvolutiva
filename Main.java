@@ -226,7 +226,7 @@ public class Main {
         System.out.println("========================================");
         System.out.println("INICIANDO ALGORITMO GENÉTICO");
         System.out.println("========================================");
-        System.out.println();
+        System.out.println("  ");
 
         // Lista para almacenar los resultados de todas las ejecuciones
         ArrayList<ExecutionResult> todosLosResultados = new ArrayList<>();
